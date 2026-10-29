@@ -1,0 +1,71 @@
+# docker compose up --build
+# Значения берутся из .env (см. .env.example); без него работают дефолты для разработки.
+x-api-env: &api-env
+  NODE_ENV: ${NODE_ENV:-development}
+  DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/ksoz
+  BOT_TOKEN: ${BOT_TOKEN:-000000:dev-placeholder-token}
+  BOT_USERNAME: ${BOT_USERNAME:-ksoz_bot}
+  WEBAPP_SHORT_NAME: ${WEBAPP_SHORT_NAME:-app}
+  WEBHOOK_SECRET: ${WEBHOOK_SECRET:-dev-webhook-secret}
+  WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:5173}
+  PUBLIC_URL: ${PUBLIC_URL:-http://localhost:3000}
+  MINIAPP_URL: ${MINIAPP_URL:-http://localhost:5173}
+  ADMIN_IDS: ${ADMIN_IDS:-}
+
+x-api-build: &api-build
+  context: .
+  dockerfile: apps/api/Dockerfile
+  target: runtime
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ksoz
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ksoz"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    build: *api-build
+    image: ksoz-api
+    command: ["sh", "-c", "node dist/main.js migrate && node dist/main.js seed"]
+    environment: *api-env
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    build: *api-build
+    image: ksoz-api
+    command: ["node", "dist/main.js", "serve"]
+    environment: *api-env
+    ports:
+      - "3000:3000"
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  worker:
+    build: *api-build
+    image: ksoz-api
+    command: ["node", "dist/main.js", "worker"]
+    environment: *api-env
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    restart: unless-stopped
+
+volumes:
+  pgdata:

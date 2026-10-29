@@ -1,0 +1,26 @@
+# docker compose -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from test
+services:
+  postgres-test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ksoz_test
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ksoz_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  test:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: build
+    working_dir: /app
+    command: ["npm", "test"]
+    environment:
+      DATABASE_URL_TEST: postgres://postgres:postgres@postgres-test:5432/ksoz_test
+    depends_on:
+      postgres-test: { condition: service_healthy }
