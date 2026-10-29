@@ -1,0 +1,19 @@
+{
+  "name": "ksoz",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "build": "npm run build -w @ksoz/shared && npm run build -w @ksoz/api",
+    "typecheck": "npm run build -w @ksoz/shared && npm run typecheck -w @ksoz/shared && npm run typecheck -w @ksoz/api",
+    "lint": "npm run typecheck",
+    "test": "npm run test -w @ksoz/shared && npm run test -w @ksoz/api",
+    "dev": "npm run build -w @ksoz/shared && npm run dev -w @ksoz/api"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vitest": "^3.2.4",
+    "@types/node": "^22.10.0"
+  }
+}
