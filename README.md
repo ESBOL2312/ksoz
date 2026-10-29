@@ -54,6 +54,10 @@ node apps/api/dist/main.js migrate && node apps/api/dist/main.js seed
 
 Миграции: после правки `apps/api/src/db/schema.ts` выполните `npm run db:generate -w @ksoz/api` и закоммитьте новые файлы из `apps/api/drizzle/`.
 
+## Админка и картинки
+
+`/admin/*` доступен пользователям из `ADMIN_IDS`. `POST /admin/words/:id/image` принимает `{ "image_url": "https://..." }` — файл в S3 админка/CDN загружает отдельно, бэкенд хранит только URL. `POST /admin/words/import` принимает CSV (`Content-Type: text/csv`, колонки `kk,ru,level,topic,example_kk,example_ru`; `topic` — slug, несколько через `|`) и ставит словам статус `draft`.
+
 ## Тесты
 
 Юнит-тесты (`@ksoz/shared`, проверка initData) не требуют БД. Интеграционным нужен Postgres в `DATABASE_URL_TEST`; без него они пропускаются.

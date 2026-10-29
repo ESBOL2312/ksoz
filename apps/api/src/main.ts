@@ -2,11 +2,12 @@ import { pino } from 'pino';
 import { buildApp } from './app.js';
 import { loadConfig } from './config.js';
 import { createDb } from './db/client.js';
+import { setWebhook } from './bot/index.js';
 import { runMigrations } from './db/migrate.js';
 import { seed } from './db/seed.js';
 import { startWorker } from './worker/index.js';
 
-const COMMANDS = ['serve', 'worker', 'migrate', 'seed'] as const;
+const COMMANDS = ['serve', 'worker', 'migrate', 'seed', 'set-webhook'] as const;
 type Command = (typeof COMMANDS)[number];
 
 async function serve() {
@@ -49,6 +50,10 @@ const handlers: Record<Command, () => Promise<void>> = {
   worker,
   migrate: () => withDb(runMigrations),
   seed: () => withDb(seed),
+  'set-webhook': async () => {
+    const url = await setWebhook(loadConfig());
+    console.log(`webhook set: ${url}`);
+  },
 };
 
 const cmd = process.argv[2] as Command;

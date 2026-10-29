@@ -121,9 +121,9 @@ export const IntroduceResponseSchema = z.object({ next: NextStateSchema });
 export const HintBodySchema = z.object({
   word_id: Id,
   /** сколько подсказок уже использовано в этой попытке */
-  hints: z.number().int().min(0).max(50),
+  hints_used: z.number().int().min(0).max(50),
 });
-export const HintResponseSchema = z.object({ hint: z.string(), hints: z.number().int() });
+export const HintResponseSchema = z.object({ hint: z.string(), hints_used: z.number().int() });
 
 // --- reviews ---
 export const ReviewBodySchema = z.object({
@@ -195,7 +195,7 @@ export const BazaarItemSchema = z.object({
   price: z.number().int(),
   min_level: LevelSchema,
   image_url: z.string().nullable(),
-  status: z.enum(['owned', 'available', 'locked']),
+  status: z.enum(['owned', 'available', 'locked_by_level']),
   equipped: z.boolean(),
 });
 export const BazaarResponseSchema = z.object({ items: z.array(BazaarItemSchema) });
@@ -215,18 +215,17 @@ export const TaskClaimParamsSchema = z.object({ code: z.string().min(1).max(32) 
 export const TaskClaimResponseSchema = z.object({ reward: z.number().int(), balance: z.number().int() });
 
 // --- import из localStorage прототипа ---
+export const LocalCardSchema = z.object({
+  reps: z.number().int().min(0),
+  interval: z.number().min(0),
+  ef: z.number().min(1.3).max(5),
+  due: z.number().int(), // день как число дней с эпохи, как в прототипе
+});
 export const ImportLocalBodySchema = z.object({
-  cards: z
-    .array(
-      z.object({
-        kk: z.string(),
-        reps: z.number().int().min(0),
-        interval: z.number().min(0),
-        ef: z.number().min(1.3).max(5),
-        due: z.number().int(), // день в виде числа дней с эпохи, как в прототипе
-      }),
-    )
-    .max(500),
+  /** S.cards прототипа: индекс слова -> карточка */
+  cards: z.record(z.string().regex(/^\d+$/), LocalCardSchema),
+  /** индекс -> казахское слово (клиент знает WORDS прототипа) */
+  words: z.array(z.string().max(100)).max(2000),
 });
 export const ImportLocalResponseSchema = z.object({
   imported: z.number().int(),
@@ -254,3 +253,51 @@ export const InviteResponseSchema = z.object({ link: z.string() });
 
 export type Purchase = z.infer<typeof PurchaseResponseSchema>;
 export type Baige = z.infer<typeof BaigeResponseSchema>;
+
+// --- admin ---
+export const AdminExampleSchema = ExampleSchema;
+export const AdminWordSchema = z.object({
+  id: Id,
+  kk: z.string(),
+  kk_latn: z.string().nullable(),
+  ru: z.string(),
+  en: z.string().nullable(),
+  level: LevelSchema,
+  image_url: z.string().nullable(),
+  audio_url: z.string().nullable(),
+  status: WordStatusSchema,
+  examples: z.array(ExampleSchema),
+  topics: z.array(z.string()),
+});
+export type AdminWord = z.infer<typeof AdminWordSchema>;
+
+export const AdminWordInputSchema = z.object({
+  kk: z.string().trim().min(1).max(100),
+  kk_latn: z.string().max(100).nullable().optional(),
+  ru: z.string().trim().min(1).max(200),
+  en: z.string().max(200).nullable().optional(),
+  level: LevelSchema.default('A1'),
+  status: WordStatusSchema.default('draft'),
+  audio_url: z.string().max(500).nullable().optional(),
+  examples: z.array(ExampleSchema).max(10).default([]),
+  /** slug тем */
+  topics: z.array(z.string().min(1).max(64)).max(10).default([]),
+});
+export const AdminWordPatchSchema = AdminWordInputSchema.partial();
+export const AdminWordsQuerySchema = z.object({
+  status: WordStatusSchema.optional(),
+  level: LevelSchema.optional(),
+  q: z.string().max(100).optional(),
+  limit: z.coerce.number().int().min(1).max(500).default(100),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+export const AdminWordsResponseSchema = z.object({ words: z.array(AdminWordSchema), total: z.number().int() });
+export const AdminIdParamsSchema = z.object({ id: z.coerce.number().int().positive() });
+export const AdminStatusBodySchema = z.object({ status: WordStatusSchema });
+export const AdminImageBodySchema = z.object({ image_url: z.string().url().max(1000).nullable() });
+export const AdminImportResponseSchema = z.object({
+  created: z.number().int(),
+  updated: z.number().int(),
+  errors: z.array(z.object({ line: z.number().int(), error: z.string() })),
+});
+export const AdminOkSchema = z.object({ ok: z.literal(true) });

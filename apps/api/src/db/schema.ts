@@ -132,6 +132,7 @@ export const users = pgTable(
       .default(sql`'{"short":true,"daily":true,"streak":true,"baige":true}'::jsonb`),
     referrerId: tgId('referrer_id'),
     botBlocked: boolean('bot_blocked').notNull().default(false),
+    importedAt: ts('imported_at'), // когда перенесён прогресс из localStorage прототипа
     createdAt: ts('created_at').notNull().defaultNow(),
   },
   (t) => [index('users_city_idx').on(t.cityId)],
@@ -179,6 +180,7 @@ export const reviews = pgTable(
     dueBefore: ts('due_before'),
     dueAfter: ts('due_after').notNull(),
     altyn: integer('altyn').notNull().default(0),
+    result: jsonb('result'), // ответ API целиком: повтор с тем же client_id возвращает его
     createdAt: ts('created_at').notNull().defaultNow(),
   },
   (t) => [index('reviews_user_created_idx').on(t.userId, t.createdAt)],
