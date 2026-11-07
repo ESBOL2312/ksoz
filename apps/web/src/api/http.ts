@@ -17,10 +17,15 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Вне Telegram ходим через X-Dev-User (бэкенд принимает его только при NODE_ENV=development):
+ * всегда в `vite dev`, в прод-сборке — только если при сборке задан VITE_DEV_USER.
+ */
+const devUserEnabled = import.meta.env.DEV || !!import.meta.env.VITE_DEV_USER;
 export const DEV_USER = import.meta.env.VITE_DEV_USER || '42';
 
-/** true, если миниапп открыт вне Telegram в dev-сборке: ходим через X-Dev-User. */
-export const isDevFallback = (): boolean => !getWebApp() && import.meta.env.DEV;
+/** true, если миниапп открыт вне Telegram и разрешён dev-вход. */
+export const isDevFallback = (): boolean => !getWebApp() && devUserEnabled;
 
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
@@ -30,7 +35,7 @@ export const http = axios.create({
 http.interceptors.request.use((config) => {
   const wa = getWebApp();
   if (wa) config.headers.set('Authorization', `tma ${wa.initData}`);
-  else if (import.meta.env.DEV) config.headers.set('X-Dev-User', DEV_USER);
+  else if (devUserEnabled) config.headers.set('X-Dev-User', DEV_USER);
   return config;
 });
 

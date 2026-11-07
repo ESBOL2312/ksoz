@@ -14,5 +14,9 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     UApp: typeof import('./../../node_modules/@nuxt/ui/dist/runtime/components/App.vue')['default']
+    UModal: typeof import('./../../node_modules/@nuxt/ui/dist/runtime/components/Modal.vue')['default']
+    USelect: typeof import('./../../node_modules/@nuxt/ui/dist/runtime/components/Select.vue')['default']
+    USkeleton: typeof import('./../../node_modules/@nuxt/ui/dist/runtime/components/Skeleton.vue')['default']
+    USwitch: typeof import('./../../node_modules/@nuxt/ui/dist/runtime/components/Switch.vue')['default']
   }
 }
