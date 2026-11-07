@@ -1,0 +1,193 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@source "../";
+
+/*
+ * Палитра из макета «Сөз ауылы»: войлок, алтын, лазурь.
+ * Шкалы 50–950 нужны Nuxt UI (primary=felt, secondary=gold, success=sky, neutral=night).
+ */
+@theme static {
+  --font-sans: "Nunito", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+
+  --color-felt-50: #fdf3f2;
+  --color-felt-100: #fbe4e1;
+  --color-felt-200: #f8cdc8;
+  --color-felt-300: #f2aaa2;
+  --color-felt-400: #e8786b;
+  --color-felt-500: #d9493b;
+  --color-felt-600: #c7382b;
+  --color-felt-700: #a82e22;
+  --color-felt-800: #8e2219;
+  --color-felt-900: #73221b;
+  --color-felt-950: #3e0d09;
+
+  --color-gold-50: #fef9ec;
+  --color-gold-100: #fcedc9;
+  --color-gold-200: #f9d98e;
+  --color-gold-300: #f6c453;
+  --color-gold-400: #f2b42c;
+  --color-gold-500: #e09514;
+  --color-gold-600: #b97f12;
+  --color-gold-700: #9a5a10;
+  --color-gold-800: #7d4614;
+  --color-gold-900: #673a14;
+  --color-gold-950: #3b1d06;
+
+  --color-sky-50: #ecfcff;
+  --color-sky-100: #cff6fe;
+  --color-sky-200: #a5edfc;
+  --color-sky-300: #67dff9;
+  --color-sky-400: #22c7ee;
+  --color-sky-500: #19aecb;
+  --color-sky-600: #0e7e95;
+  --color-sky-700: #116a7e;
+  --color-sky-800: #165767;
+  --color-sky-900: #174957;
+  --color-sky-950: #082f3b;
+
+  --color-night-50: #f1f3fb;
+  --color-night-100: #dce0f6;
+  --color-night-200: #c9cdea;
+  --color-night-300: #9ea6d6;
+  --color-night-400: #6f7cbd;
+  --color-night-500: #4b5aa6;
+  --color-night-600: #3d52a3;
+  --color-night-700: #33468f;
+  --color-night-800: #203272;
+  --color-night-900: #15214b;
+  --color-night-950: #0b1230;
+
+  --color-milk: #fbf3e3;
+  --color-milk-2: #f1e3c8;
+  --color-ink: #1b1736;
+  --color-ink-2: #5a5478;
+  --color-grass: #7daa45;
+}
+
+:root {
+  /* фон приложения */
+  --ui-bg: var(--color-night-900);
+  --ui-bg-muted: var(--color-night-800);
+  --ui-bg-elevated: var(--color-night-800);
+  --ui-bg-accented: var(--color-night-700);
+  --ui-text: var(--color-milk);
+  --ui-text-muted: var(--color-night-300);
+  --ui-text-toned: var(--color-night-200);
+  --ui-text-highlighted: #fff;
+  --ui-border: var(--color-night-700);
+  --ui-radius: 0.75rem;
+
+  /* отступы безопасной зоны Telegram (заполняются в telegram/webapp.ts) */
+  --tg-safe-top: env(safe-area-inset-top, 0px);
+  --tg-safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.dark {
+  --ui-primary: var(--color-felt-600);
+  --ui-secondary: var(--color-gold-400);
+  --ui-success: var(--color-sky-500);
+  --ui-error: var(--color-felt-500);
+  --ui-bg: var(--color-night-900);
+  --ui-bg-muted: var(--color-night-800);
+  --ui-bg-elevated: var(--color-night-800);
+  --ui-bg-accented: var(--color-night-700);
+  --ui-text: var(--color-milk);
+  --ui-text-muted: var(--color-night-300);
+  --ui-text-toned: var(--color-night-200);
+  --ui-text-highlighted: #fff;
+  --ui-border: var(--color-night-700);
+}
+
+html,
+body {
+  background: var(--color-night-900);
+  color: var(--color-milk);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+body {
+  margin: 0;
+  /* орнамент «қошқар мүйіз» на фоне */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cpath d='M32 52V36c0-10-10-15-16-10-4 4-1 10 4 8M32 36c0-10 10-15 16-10 4 4 1 10-4 8M32 20V12' fill='none' stroke='%23F2B42C' stroke-opacity='.07' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+/* «толстые» кнопки из макета: цветная плашка с нижней тенью */
+@utility chunky {
+  border-radius: 18px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  transition: transform 0.08s, box-shadow 0.08s;
+  &:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 var(--chunky-shadow, rgba(0, 0, 0, 0.3));
+  }
+  &:disabled {
+    opacity: 0.55;
+  }
+}
+@utility chunky-gold {
+  background: var(--color-gold-400);
+  color: var(--color-ink);
+  --chunky-shadow: var(--color-gold-600);
+  box-shadow: 0 5px 0 var(--color-gold-600);
+}
+@utility chunky-sky {
+  background: var(--color-sky-500);
+  color: #fff;
+  --chunky-shadow: var(--color-sky-600);
+  box-shadow: 0 5px 0 var(--color-sky-600);
+}
+@utility chunky-felt {
+  background: var(--color-felt-600);
+  color: #fff;
+  --chunky-shadow: var(--color-felt-800);
+  box-shadow: 0 5px 0 var(--color-felt-800);
+}
+@utility chunky-night {
+  background: var(--color-night-800);
+  color: var(--color-gold-400);
+  --chunky-shadow: #0e1838;
+  box-shadow: 0 5px 0 #0e1838;
+}
+@utility card-milk {
+  background: var(--color-milk);
+  color: var(--color-ink);
+  box-shadow: 0 5px 0 var(--color-milk-2);
+}
+
+@keyframes bob {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes shake {
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+@keyframes fly {
+  50% {
+    transform: translateY(-10px) rotate(20deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
