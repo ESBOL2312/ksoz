@@ -86,6 +86,8 @@ export const HomeSchema = z.object({
   combo: z.number().int(),
   streak_current: z.number().int(),
   aul_stage: z.number().int(),
+  /** слов в фазе review: прогресс аула до следующего порога AUL_THRESHOLDS */
+  review_words: z.number().int(),
   equipped: z.array(EquippedItemSchema),
   due_count: z.number().int(),
   new_left_today: z.number().int(),
@@ -248,6 +250,11 @@ export const BaigeResponseSchema = z.object({
   me: z.object({ place: z.number().int().nullable(), score: z.number().int() }),
   prize: z.number().int().nullable(),
 });
+
+// --- cities ---
+export const CitySchema = z.object({ id: Id, name_kk: z.string(), name_ru: z.string() });
+export const CitiesResponseSchema = z.object({ cities: z.array(CitySchema) });
+export type City = z.infer<typeof CitySchema>;
 
 export const InviteResponseSchema = z.object({ link: z.string() });
 

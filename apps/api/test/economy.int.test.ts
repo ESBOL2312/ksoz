@@ -129,12 +129,22 @@ describe.skipIf(!hasTestDb)('economy', () => {
     expect(rows).toHaveLength(3);
     expect((await app.db.select().from(users).where(eq(users.id, 44)))[0]).toMatchObject({ aulStage: 1 });
     // импорт не съедает дневной лимит новых слов (одно слово показано через introduce)
-    expect((await c.get('/v1/home')).json().new_left_today).toBe(9);
+    const home = (await c.get('/v1/home')).json();
+    expect(home.new_left_today).toBe(9);
+    expect(home).toMatchObject({ aul_stage: 1, review_words: 1 });
 
     const second = await c.post('/v1/import/local', body);
     expect(second.statusCode).toBe(409);
     expect(second.json().error).toBe('already_imported');
     expect(await app.db.select().from(userWords)).toHaveLength(3);
+  });
+
+  it('cities: list for the profile picker', async () => {
+    const res = await client(app, 45).get('/v1/cities');
+    expect(res.statusCode).toBe(200);
+    const list = res.json().cities as { id: number; name_kk: string; name_ru: string }[];
+    expect(list.length).toBeGreaterThan(0);
+    expect(list[0]).toEqual({ id: expect.any(Number), name_kk: expect.any(String), name_ru: expect.any(String) });
   });
 
   it('baige: ranking by scope, my place, prize; invite link', async () => {

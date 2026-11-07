@@ -36,3 +36,10 @@ export function computeReward(verdict: Verdict, hints: number, combo: number): R
     nextCombo: verdict === 'almost' ? combo : combo + 1,
   };
 }
+
+/** Сколько слов в фазе review нужно для каждой ступени аула (ступень = число достигнутых порогов). */
+export const AUL_THRESHOLDS = [1, 10, 25, 50, 100, 200] as const;
+
+export function aulStageFor(reviewWords: number): number {
+  return AUL_THRESHOLDS.filter((t) => reviewWords >= t).length;
+}

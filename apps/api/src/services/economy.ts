@@ -1,22 +1,22 @@
-import { addDays, localDay } from '@ksoz/shared';
+import { addDays, aulStageFor, localDay } from '@ksoz/shared';
 import { and, eq, sql } from 'drizzle-orm';
-import type { Tx } from '../db/client.js';
+import type { Db, Tx } from '../db/client.js';
 import { userWords, users } from '../db/schema.js';
 
-/** Сколько слов в фазе review нужно для каждой ступени аула (ступень = число достигнутых порогов). */
-export const AUL_THRESHOLDS = [1, 10, 25, 50, 100, 200] as const;
+export { AUL_THRESHOLDS, aulStageFor } from '@ksoz/shared';
 
-export function aulStageFor(reviewWords: number): number {
-  return AUL_THRESHOLDS.filter((t) => reviewWords >= t).length;
-}
-
-/** Пересчитывает users.aul_stage по числу слов в фазе review; пишет только при изменении. */
-export async function refreshAulStage(tx: Tx, userId: number): Promise<number> {
+/** Число слов пользователя в фазе review (от него зависит ступень аула). */
+export async function countReviewWords(tx: Tx | Db, userId: number): Promise<number> {
   const [{ n } = { n: 0 }] = await tx
     .select({ n: sql<number>`count(*)::int` })
     .from(userWords)
     .where(and(eq(userWords.userId, userId), eq(userWords.phase, 'review')));
-  const stage = aulStageFor(n);
+  return n;
+}
+
+/** Пересчитывает users.aul_stage по числу слов в фазе review; пишет только при изменении. */
+export async function refreshAulStage(tx: Tx, userId: number): Promise<number> {
+  const stage = aulStageFor(await countReviewWords(tx, userId));
   await tx
     .update(users)
     .set({ aulStage: stage })
