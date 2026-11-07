@@ -2,5 +2,36 @@
   "name": "@ksoz/web",
   "version": "0.0.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fontsource/nunito": "^5.3.0",
+    "@fontsource/unbounded": "^5.3.0",
+    "@iconify-json/lucide": "^1.2.151",
+    "@ksoz/shared": "*",
+    "@nuxt/ui": "^4.0.0",
+    "@tanstack/vue-query": "^5.90.0",
+    "axios": "^1.12.0",
+    "pinia": "^3.0.3",
+    "tailwindcss": "^4.1.0",
+    "vue": "^3.5.22",
+    "vue-router": "^4.5.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/test-utils": "^2.5.1",
+    "@vue/tsconfig": "^0.8.1",
+    "happy-dom": "^21.0.4",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.0",
+    "vitest": "^3.2.7",
+    "vue-tsc": "^3.1.0"
+  }
 }

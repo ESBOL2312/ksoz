@@ -3,6 +3,7 @@ import { and, count, eq, lte } from 'drizzle-orm';
 import type { Db } from '../db/client.js';
 import { userWords, type UserRow } from '../db/schema.js';
 import { equippedItems } from './bazaar.js';
+import { countReviewWords } from './economy.js';
 import { newLeftToday } from './lesson.js';
 import { listTasks } from './tasks.js';
 
@@ -16,6 +17,7 @@ export async function getHome(db: Db, user: UserRow, now = new Date()) {
     combo: user.combo,
     streak_current: user.streakCurrent,
     aul_stage: user.aulStage,
+    review_words: await countReviewWords(db, user.id),
     equipped: await equippedItems(db, user.id),
     due_count: due?.n ?? 0,
     new_left_today: await newLeftToday(db, user, now),

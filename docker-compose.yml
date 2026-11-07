@@ -1,4 +1,4 @@
-# docker compose up --build
+# docker compose up --build  →  миниапп на http://localhost:5173, API на :3000
 # Значения берутся из .env (см. .env.example); без него работают дефолты для разработки.
 x-api-env: &api-env
   NODE_ENV: ${NODE_ENV:-development}
@@ -65,6 +65,21 @@ services:
     environment: *api-env
     depends_on:
       migrate: { condition: service_completed_successfully }
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_BOT_USERNAME: ${BOT_USERNAME:-ksoz_bot}
+        # вход без Telegram (X-Dev-User) для локальной разработки; в проде задайте WEB_DEV_USER= (пусто)
+        VITE_DEV_USER: ${WEB_DEV_USER-42}
+    image: ksoz-web
+    ports:
+      - "5173:80"
+    depends_on:
+      api: { condition: service_healthy }
     restart: unless-stopped
 
 volumes:

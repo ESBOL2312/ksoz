@@ -1,11 +1,18 @@
-import { DEFAULT_NOTIFY, MeSchema, PatchMeBodySchema, isValidTimezone } from '@ksoz/shared';
-import { eq } from 'drizzle-orm';
+import { CitiesResponseSchema, DEFAULT_NOTIFY, MeSchema, PatchMeBodySchema, isValidTimezone } from '@ksoz/shared';
+import { asc, eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { cities, users } from '../db/schema.js';
 import { badRequest } from '../errors.js';
 import { serializeMe } from '../services/me.js';
 
 export const profileRoutes: FastifyPluginAsyncZod = async (app) => {
+  app.get('/v1/cities', { schema: { response: { 200: CitiesResponseSchema } } }, async () => ({
+    cities: await app.db
+      .select({ id: cities.id, name_kk: cities.nameKk, name_ru: cities.nameRu })
+      .from(cities)
+      .orderBy(asc(cities.nameRu)),
+  }));
+
   app.patch('/v1/me', { schema: { body: PatchMeBodySchema, response: { 200: MeSchema } } }, async (req) => {
     const b = req.body;
     const set: Partial<typeof users.$inferInsert> = {};

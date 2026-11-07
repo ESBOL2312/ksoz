@@ -16,7 +16,13 @@ apps/
     src/bot/              registerBot(app) — webhook бота
     src/worker/           startWorker(ctx) — напоминания (pg-boss)
     test/                 интеграционные тесты и хелперы
-  web/            заглушка (позже Vue 3 + Nuxt UI + Tailwind CSS + axios)
+  web/            миниапп: Vite + Vue 3 + Nuxt UI + Tailwind CSS + TanStack Query + Pinia + axios
+    src/telegram/         обёртка Telegram.WebApp (initData, BackButton, хаптика, CloudStorage)
+    src/api/              axios (Authorization: tma <initData>), запросы и мутации TanStack Query
+    src/stores/           Pinia: session, lesson (поток урока), outbox (неотправленные ответы)
+    src/features/         экраны: aul, lesson, bazaar, baige, profile, onboarding
+    src/shared/           SVG-спрайт из макетов, общие компоненты, форматирование
+    nginx.conf, Dockerfile  статика + прокси /api → api:3000
 packages/
   shared/         @ksoz/shared: SRS, проверка ответа, алтын, дни/недели, zod-схемы API
 ```
@@ -27,7 +33,8 @@ packages/
 docker compose up --build
 ```
 
-Поднимутся `postgres`, одноразовый `migrate` (миграции + сид слов), `api` на :3000 и `worker`.
+Поднимутся `postgres`, одноразовый `migrate` (миграции + сид слов), `api` на :3000, `worker` и `web` (миниапп) на :5173.
+Миниапп открывается в обычном браузере на http://localhost:5173 под пользователем `WEB_DEV_USER` (по умолчанию 42).
 Без файла `.env` работают значения для разработки (`NODE_ENV=development`, токен-заглушка);
 в этом режиме можно ходить без Telegram:
 
@@ -49,6 +56,10 @@ npm run build
 npm run dev                     # tsx watch, нужен DATABASE_URL и BOT_TOKEN в окружении
 node apps/api/dist/main.js migrate && node apps/api/dist/main.js seed
 ```
+
+Миниапп: `npm run dev:web` — Vite на :5173, `/api` проксируется на `localhost:3000`. Вне Telegram запросы идут с `X-Dev-User: 42`
+(`VITE_DEV_USER` в `apps/web/.env`). Чтобы открыть в Telegram, нужен HTTPS: туннель (cloudflared, ngrok) на :5173 и этот URL в BotFather.
+Архитектура фронтенда: [документ](https://claude.ai/artifact/4mN9nk7oZGmdXDtkXYZr6G).
 
 Команды: `npm run build`, `npm run typecheck` (он же `lint`), `npm test`.
 
@@ -90,3 +101,6 @@ docker compose -f docker-compose.test.yml up --build --abort-on-container-exit -
 | `NODE_ENV` | `development` | `development` включает заголовок `X-Dev-User` |
 | `PORT` | `3000` | порт API |
 | `LOG_LEVEL` | `info` | уровень pino |
+| `WEB_DEV_USER` | `42` | только docker compose: вход в миниапп без Telegram; в production пусто |
+| `VITE_API_URL` | `/api` | сборка миниаппа: базовый URL API |
+| `VITE_BOT_USERNAME` | `ksoz_bot` | сборка миниаппа: ссылка «Открыть бота» |
