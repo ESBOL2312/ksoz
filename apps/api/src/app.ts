@@ -32,7 +32,7 @@ export async function buildApp(config: Config, deps: { db?: Db } = {}): Promise<
 
   let db = deps.db;
   if (!db) {
-    const created = createDb(config.DATABASE_URL);
+    const created = createDb(config.DATABASE_URL, config.DB_POOL_MAX);
     db = created.db;
     app.addHook('onClose', async () => {
       await created.pool.end();

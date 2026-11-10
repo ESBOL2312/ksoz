@@ -29,3 +29,10 @@ describe('loadConfig', () => {
     expect(c.KEEPALIVE_URL).toBe('https://api.ksoz.kz/health');
   });
 });
+
+describe('WEBHOOK_SECRET', () => {
+  it('rejects characters Telegram does not allow in secret_token', () => {
+    expect(() => loadConfig({ ...base, WEBHOOK_SECRET: 'bFN/b+KZ9=' })).toThrow(/WEBHOOK_SECRET/);
+    expect(loadConfig({ ...base, WEBHOOK_SECRET: 'abc_DEF-123' }).WEBHOOK_SECRET).toBe('abc_DEF-123');
+  });
+});

@@ -16,12 +16,17 @@ API, бот и воркер напоминаний работают в одно�
 
 Transaction pooler (порт 6543) не подходит: pg-boss нужны сессионные возможности.
 
+Session pooler на бесплатном тарифе пускает 15 клиентов. Поэтому на Render заданы
+`DB_POOL_MAX=4` и `BOSS_POOL_MAX=3`: 7 соединений на инстанс, и во время деплоя, когда старый и новый
+инстансы работают одновременно, получается 14.
+
 ## 2. Render
 
 1. New → **Blueprint** → репозиторий `ksoz`. Render прочитает `render.yaml`.
 2. Заполнить переменные: `DATABASE_URL` (из шага 1), `BOT_TOKEN`, `BOT_USERNAME`,
    `WEB_ORIGIN=https://esbol2312.github.io`, `MINIAPP_URL` (адрес миниаппа на Pages), `ADMIN_IDS`.
-   `WEBHOOK_SECRET` сгенерируется сам, `PUBLIC_URL` возьмётся из адреса сервиса.
+   `WEBHOOK_SECRET` — длинная случайная строка только из латиницы, цифр, `_` и `-`
+   (другие символы Telegram отклоняет). `PUBLIC_URL` возьмётся из адреса сервиса.
 3. Deploy. В логах должно быть `webhook set` и `worker started`; проверить:
    `curl https://ksoz-api.onrender.com/health` → `{"status":"ok","db":"ok"}`.
 

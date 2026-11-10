@@ -20,8 +20,8 @@ services:
         sync: false
       - key: BOT_USERNAME
         sync: false
-      - key: WEBHOOK_SECRET
-        generateValue: true
+      - key: WEBHOOK_SECRET # только латиница, цифры, _ и - (требование Telegram)
+        sync: false
       - key: WEB_ORIGIN # https://esbol2312.github.io (без пути)
         sync: false
       - key: MINIAPP_URL # полный адрес миниаппа на GitHub Pages
@@ -31,5 +31,11 @@ services:
       # PUBLIC_URL и KEEPALIVE_URL берутся из RENDER_EXTERNAL_URL автоматически
       - key: KEEPALIVE_MINUTES
         value: "9"
+      # Supabase Free (Session pooler) даёт 15 соединений; при деплое старый и новый инстансы
+      # какое-то время работают вместе, поэтому на один инстанс — не больше 7
+      - key: DB_POOL_MAX
+        value: "4"
+      - key: BOSS_POOL_MAX
+        value: "3"
       - key: SET_WEBHOOK_ON_START
         value: "true"

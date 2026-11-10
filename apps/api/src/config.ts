@@ -22,7 +22,11 @@ const EnvSchema = z
     BOT_TOKEN: z.string().min(1),
     BOT_USERNAME: z.string().default('ksoz_bot'),
     WEBAPP_SHORT_NAME: z.string().default('app'),
-    WEBHOOK_SECRET: z.string().default(DEV_WEBHOOK_SECRET),
+    // Telegram принимает secret_token только из A-Z, a-z, 0-9, _ и - (1–256 символов)
+    WEBHOOK_SECRET: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{1,256}$/, 'WEBHOOK_SECRET: only A-Z, a-z, 0-9, _ and - (Telegram secret_token)')
+      .default(DEV_WEBHOOK_SECRET),
     WEB_ORIGIN: z.string().default('http://localhost:5173'),
     PUBLIC_URL: z.string().default('http://localhost:3000'),
     MINIAPP_URL: z.string().default('http://localhost:5173'),
@@ -31,6 +35,9 @@ const EnvSchema = z
     /** если задан — serve раз в KEEPALIVE_MINUTES запрашивает этот URL (бесплатный Render засыпает через 15 мин) */
     KEEPALIVE_URL: z.union([z.literal('').transform(() => undefined), z.string().url()]).optional(),
     KEEPALIVE_MINUTES: z.coerce.number().positive().default(9),
+    /** пул соединений приложения и pg-boss (на бесплатном Supabase Session pooler — 15 на всё) */
+    DB_POOL_MAX: z.coerce.number().int().positive().default(10),
+    BOSS_POOL_MAX: z.coerce.number().int().positive().default(10),
     /** режим all: при старте регистрировать webhook бота (PUBLIC_URL/bot/webhook) */
     SET_WEBHOOK_ON_START: z
       .enum(['true', 'false', '1', '0', ''])

@@ -33,7 +33,7 @@ async function serve() {
 async function all() {
   const config = loadConfig();
   const log = pino({ level: config.LOG_LEVEL });
-  const { db, pool } = createDb(config.DATABASE_URL);
+  const { db, pool } = createDb(config.DATABASE_URL, config.DB_POOL_MAX);
   await runMigrations(db);
   await seed(db);
   const app = await buildApp(config, { db });
@@ -63,7 +63,7 @@ async function all() {
 async function worker() {
   const config = loadConfig();
   const log = pino({ level: config.LOG_LEVEL });
-  const { db, pool } = createDb(config.DATABASE_URL);
+  const { db, pool } = createDb(config.DATABASE_URL, config.DB_POOL_MAX);
   const w = await startWorker({ config, db, log });
   const keepAlive = setInterval(() => {}, 1 << 30); // пока нет pg-boss, процесс не должен выходить
   const shutdown = async () => {
@@ -78,7 +78,7 @@ async function worker() {
 
 async function withDb(fn: (db: ReturnType<typeof createDb>['db']) => Promise<void>) {
   const config = loadConfig();
-  const { db, pool } = createDb(config.DATABASE_URL);
+  const { db, pool } = createDb(config.DATABASE_URL, config.DB_POOL_MAX);
   try {
     await fn(db);
   } finally {
