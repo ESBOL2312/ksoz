@@ -4,6 +4,7 @@ import Art from '@/shared/art/Art.vue';
 import Barys from '@/shared/mascot/Barys.vue';
 import type { BarysMood, BarysWear } from '@/shared/mascot/mascot';
 import { sceneFrom } from '@/shared/mascot/mascot';
+import { useSky } from '@/shared/sky/sky';
 
 const props = defineProps<{
   stage: number;
@@ -18,28 +19,65 @@ const scene = computed(() => sceneFrom(props.equipped));
 /** Юрты растут вместе с аулом: 0 — пустая степь с костром, дальше по одной. */
 const yurts = computed(() => Math.min(3, props.stage) + (scene.value.house ? 1 : 0));
 const far = computed(() => Math.max(0, Math.min(4, props.stage - 3)));
+
+// Небо живёт по местному времени: рассвет, день, закат, ночь
+const sky = useSky();
+const PHASES = ['dawn', 'day', 'dusk', 'night'] as const;
+const night = computed(() => sky.value.phase === 'night');
+/** дуга: x — доля ширины, y — высота над горизонтом (0..1) → top в px */
+const orb = (o: { x: number; y: number }) => ({ left: `calc(${o.x * 100}% - 32px)`, top: `${132 - o.y * 92}px` });
+
+// Звёзды: детерминированная россыпь, чтобы не прыгали при перерисовке
+const stars = Array.from({ length: 46 }, (_, i) => {
+  const r = (n: number) => ((Math.sin(i * 12.9898 + n * 78.233) * 43758.5453) % 1 + 1) % 1;
+  return { x: r(1) * 100, y: r(2) * 150, s: 1 + r(3) * 2.2, d: r(4) * 4 };
+});
+const fireflies = [
+  { x: 30, y: 60, d: 0 },
+  { x: 62, y: 34, d: 1.3 },
+  { x: 86, y: 70, d: 2.1 },
+  { x: 18, y: 28, d: 2.8 },
+];
 </script>
 
 <template>
-  <div class="scene" aria-hidden="true">
-    <!-- небо -->
-    <div class="sun" />
-    <svg class="cloud c1" viewBox="0 0 120 40"><path d="M14 36h92a14 14 0 0 0-6-27 22 22 0 0 0-40-6 16 16 0 0 0-28 9 12 12 0 0 0-18 24z" fill="#fff" /></svg>
-    <svg class="cloud c2" viewBox="0 0 120 40"><path d="M14 36h92a14 14 0 0 0-6-27 22 22 0 0 0-40-6 16 16 0 0 0-28 9 12 12 0 0 0-18 24z" fill="#fff" /></svg>
+  <div class="scene" :class="`is-${sky.phase}`" :data-phase="sky.phase" aria-hidden="true">
+    <!-- небо: четыре слоя, активный проявляется плавно -->
+    <div v-for="p in PHASES" :key="p" class="sky" :class="[`sky-${p}`, { on: sky.phase === p }]" />
+
+    <!-- звёзды и падающая звезда -->
+    <div class="stars" :class="{ on: night || sky.phase === 'dusk' }">
+      <i v-for="(st, i) in stars" :key="i" :style="{ left: st.x + '%', top: st.y + 'px', width: st.s + 'px', height: st.s + 'px', animationDelay: st.d + 's' }" />
+      <b class="shooting" />
+    </div>
+
+    <!-- солнце и луна идут по дуге -->
+    <div v-if="sky.sun" class="sun" :style="orb(sky.sun)" />
+    <svg v-if="sky.moon" class="moon" :style="orb(sky.moon)" viewBox="0 0 64 64">
+      <mask id="aul-moon-mask">
+        <rect width="64" height="64" fill="#fff" />
+        <circle cx="44" cy="24" r="19" fill="#000" />
+      </mask>
+      <circle cx="32" cy="32" r="22" fill="#FFF6D8" mask="url(#aul-moon-mask)" />
+      <circle cx="22" cy="38" r="3" fill="#EADFB8" />
+      <circle cx="27" cy="46" r="2" fill="#EADFB8" />
+    </svg>
+    <svg class="cloud c1" viewBox="0 0 120 40"><path d="M14 36h92a14 14 0 0 0-6-27 22 22 0 0 0-40-6 16 16 0 0 0-28 9 12 12 0 0 0-18 24z" fill="var(--cloud)" /></svg>
+    <svg class="cloud c2" viewBox="0 0 120 40"><path d="M14 36h92a14 14 0 0 0-6-27 22 22 0 0 0-40-6 16 16 0 0 0-28 9 12 12 0 0 0-18 24z" fill="var(--cloud)" /></svg>
 
     <!-- горы Алатау -->
     <svg class="layer mountains" viewBox="0 0 400 140" preserveAspectRatio="none">
-      <path d="M0 140V78L46 40l30 22 48-52 44 44 26-18 52 46 40-40 50 34 34-20 30 22v84Z" fill="#9DB8CC" />
-      <path d="M124 10l-22 24 10-2 8 8 10-10 12 8 6-4zM248 34l-16 16 8-1 8 6 8-6 10 4zM46 40l-18 15 9-1 7 5 8-6 8 3z" fill="#fff" />
-      <path d="M0 140V100l40-26 40 20 56-34 50 30 44-22 60 32 44-18 66 26v32Z" fill="#7E9DB6" />
-      <path d="M136 60l-14 10 7 0 6 4 6-4 8 2zM296 66l-12 9 7-1 5 3 6-3 7 1z" fill="#EAF2F7" />
+      <path d="M0 140V78L46 40l30 22 48-52 44 44 26-18 52 46 40-40 50 34 34-20 30 22v84Z" style="fill: var(--m1)" />
+      <path d="M124 10l-22 24 10-2 8 8 10-10 12 8 6-4zM248 34l-16 16 8-1 8 6 8-6 10 4zM46 40l-18 15 9-1 7 5 8-6 8 3z" style="fill: var(--snow)" />
+      <path d="M0 140V100l40-26 40 20 56-34 50 30 44-22 60 32 44-18 66 26v32Z" style="fill: var(--m2)" />
+      <path d="M136 60l-14 10 7 0 6 4 6-4 8 2zM296 66l-12 9 7-1 5 3 6-3 7 1z" style="fill: var(--snow2)" />
     </svg>
 
     <!-- холмы -->
     <svg class="layer hills" viewBox="0 0 400 120" preserveAspectRatio="none">
-      <path d="M0 40 Q80 10 170 34 T400 26 V120 H0Z" fill="#9CC25A" />
-      <path d="M0 74 Q110 46 220 66 T400 60 V120 H0Z" fill="#84B24A" />
-      <path d="M0 98 Q140 82 260 94 T400 90 V120 H0Z" fill="#74A23F" />
+      <path d="M0 40 Q80 10 170 34 T400 26 V120 H0Z" style="fill: var(--h1)" />
+      <path d="M0 74 Q110 46 220 66 T400 60 V120 H0Z" style="fill: var(--h2)" />
+      <path d="M0 98 Q140 82 260 94 T400 90 V120 H0Z" style="fill: var(--h3)" />
     </svg>
 
     <!-- дальние юрты большого аула -->
@@ -65,6 +103,13 @@ const far = computed(() => Math.max(0, Math.min(4, props.stage - 3)));
     <Barys class="barys" :mood="mood" v-bind="wear" />
     <Art v-if="scene.cat" name="cat" class="cat" />
 
+    <!-- сумеречный свет поверх сцены, свет из юрты и светлячки ночью -->
+    <div class="tint" />
+    <div v-if="night && yurts >= 1" class="glow" />
+    <template v-if="night">
+      <i v-for="(f, i) in fireflies" :key="'ff' + i" class="firefly" :style="{ left: f.x + '%', bottom: f.y + 'px', animationDelay: f.d + 's' }" />
+    </template>
+
     <div class="bubble" v-html="say" />
   </div>
 </template>
@@ -74,8 +119,66 @@ const far = computed(() => Math.max(0, Math.min(4, props.stage - 3)));
   position: relative;
   height: 340px;
   overflow: hidden;
-  background: linear-gradient(#4bb8de 0, #8fd3ec 38%, #d9f0f2 62%, #fde7b8 80%);
+  --m1: #9db8cc;
+  --m2: #7e9db6;
+  --snow: #fff;
+  --snow2: #eaf2f7;
+  --h1: #9cc25a;
+  --h2: #84b24a;
+  --h3: #74a23f;
+  --cloud: #fff;
+  --tint: transparent;
+
+  background: #4bb8de;
 }
+.scene.is-dawn {
+  --m1: #a49ac0; --m2: #8380ae; --snow: #ffe9e4; --snow2: #f6d9dc;
+  --h1: #9ab85c; --h2: #80a24a; --h3: #6f933f; --cloud: #ffd9d2;
+  --tint: rgba(120, 60, 120, 0.1);
+}
+.scene.is-dusk {
+  --m1: #8a76a6; --m2: #6a5f92; --snow: #ffd6c4; --snow2: #f1c2bd;
+  --h1: #869e4c; --h2: #6d8a40; --h3: #5c7a36; --cloud: #ffc2a8;
+  --tint: rgba(110, 30, 60, 0.16);
+
+}
+.scene.is-night {
+  --m1: #2f4170; --m2: #22325c; --snow: #c4d2ee; --snow2: #9fb2da;
+  --h1: #35543a; --h2: #2b4731; --h3: #223a28; --cloud: #4b5a8c;
+  --tint: rgba(8, 14, 48, 0.42);
+
+}
+.mountains path, .hills path, .cloud path { transition: fill 1.2s; }
+
+.sky { position: absolute; inset: 0; opacity: 0; transition: opacity 1.5s; }
+.sky.on { opacity: 1; }
+.sky-dawn { background: linear-gradient(#3b4f9c 0, #9a7fc0 30%, #f39fae 55%, #ffd29a 78%); }
+.sky-day { background: linear-gradient(#4bb8de 0, #8fd3ec 38%, #d9f0f2 62%, #fde7b8 80%); }
+.sky-dusk { background: linear-gradient(#22306e 0, #6a4c9c 28%, #e0688a 52%, #ffb066 76%); }
+.sky-night { background: radial-gradient(ellipse at 70% 0%, #2a3f86 0, transparent 60%), linear-gradient(#070d29 0, #111c4a 45%, #1d2d63 75%); }
+
+.stars { position: absolute; inset: 0; opacity: 0; transition: opacity 1.5s; }
+.stars.on { opacity: 1; }
+.is-dusk .stars { opacity: 0.45; }
+.stars i { position: absolute; border-radius: 50%; background: #fff; box-shadow: 0 0 4px #fff; animation: twinkle 3.2s ease-in-out infinite; }
+.shooting {
+  position: absolute; top: 30px; left: 70%; width: 70px; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, #fff, transparent); opacity: 0; transform: rotate(-20deg);
+  animation: shoot 9s ease-in 3s infinite;
+}
+.is-dusk .shooting { display: none; }
+
+.tint { position: absolute; inset: 0; background: var(--tint); transition: background 1.5s; pointer-events: none; }
+.glow {
+  position: absolute; left: calc(42% + 84px); bottom: 62px; width: 90px; height: 70px; margin-left: -45px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 196, 92, 0.75), rgba(255, 170, 60, 0.25) 55%, transparent);
+  mix-blend-mode: screen; animation: breathe 3s ease-in-out infinite;
+}
+.firefly {
+  position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #fff6a0;
+  box-shadow: 0 0 8px 3px rgba(255, 240, 120, 0.7); animation: firefly 4s ease-in-out infinite;
+}
+.moon { position: absolute; width: 64px; height: 64px; filter: drop-shadow(0 0 16px rgba(255, 246, 216, 0.55)); transition: left 60s linear, top 60s linear; }
 .layer {
   position: absolute;
   left: 0;
@@ -91,13 +194,16 @@ const far = computed(() => Math.max(0, Math.min(4, props.stage - 3)));
 }
 .sun {
   position: absolute;
-  right: 22px;
-  top: 62px;
   width: 64px;
   height: 64px;
   border-radius: 50%;
   background: #fff4c2;
   box-shadow: 0 0 0 12px rgba(255, 244, 194, 0.35), 0 0 0 26px rgba(255, 244, 194, 0.18);
+  transition: left 60s linear, top 60s linear, background 1.5s;
+}
+.is-dawn .sun, .is-dusk .sun {
+  background: #ffd27a;
+  box-shadow: 0 0 0 14px rgba(255, 190, 110, 0.35), 0 0 0 34px rgba(255, 160, 100, 0.18), 0 0 80px 30px rgba(255, 150, 90, 0.35);
 }
 .cloud {
   position: absolute;
@@ -150,6 +256,10 @@ const far = computed(() => Math.max(0, Math.min(4, props.stage - 3)));
 }
 .bubble :deep(i) { font-style: normal; color: var(--color-felt-600); }
 
+@keyframes twinkle { 50% { opacity: 0.25; transform: scale(0.7); } }
+@keyframes shoot { 0%, 92% { opacity: 0; transform: translate(0, 0) rotate(-20deg); } 94% { opacity: 1; } 100% { opacity: 0; transform: translate(-160px, 60px) rotate(-20deg); } }
+@keyframes breathe { 50% { opacity: 0.7; } }
+@keyframes firefly { 0%, 100% { opacity: 0; transform: translate(0, 0); } 30%, 70% { opacity: 1; } 50% { transform: translate(10px, -12px); } }
 @keyframes drift { to { transform: translateX(24px); } }
 @keyframes flicker { to { transform: scale(0.9, 1.08); } }
 @keyframes pop { from { opacity: 0; transform: scale(0.6) translateY(8px); } }
