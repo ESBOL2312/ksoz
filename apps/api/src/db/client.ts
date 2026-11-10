@@ -2,8 +2,9 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import * as schema from './schema.js';
 
-export function createDb(connectionString: string) {
-  const pool = new pg.Pool({ connectionString });
+/** max — размер пула соединений (DB_POOL_MAX); на бесплатном Supabase всего 15 соединений на всё. */
+export function createDb(connectionString: string, max = 10) {
+  const pool = new pg.Pool({ connectionString, max });
   const db = drizzle(pool, { schema });
   return { db, pool };
 }

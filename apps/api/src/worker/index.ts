@@ -36,7 +36,7 @@ export async function startWorker(ctx: WorkerContext): Promise<{ stop: () => Pro
   const send = ctx.send ?? telegramSender(config);
   const limiter = new RateLimiter(MAX_MESSAGES_PER_SEC);
 
-  const boss = new PgBoss(config.DATABASE_URL);
+  const boss = new PgBoss({ connectionString: config.DATABASE_URL, max: config.BOSS_POOL_MAX });
   boss.on('error', (err) => log.error({ err }, 'pg-boss error'));
   await boss.start();
 

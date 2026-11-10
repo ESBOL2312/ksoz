@@ -35,6 +35,9 @@ const EnvSchema = z
     /** если задан — serve раз в KEEPALIVE_MINUTES запрашивает этот URL (бесплатный Render засыпает через 15 мин) */
     KEEPALIVE_URL: z.union([z.literal('').transform(() => undefined), z.string().url()]).optional(),
     KEEPALIVE_MINUTES: z.coerce.number().positive().default(9),
+    /** пул соединений приложения и pg-boss (на бесплатном Supabase Session pooler — 15 на всё) */
+    DB_POOL_MAX: z.coerce.number().int().positive().default(10),
+    BOSS_POOL_MAX: z.coerce.number().int().positive().default(10),
     /** режим all: при старте регистрировать webhook бота (PUBLIC_URL/bot/webhook) */
     SET_WEBHOOK_ON_START: z
       .enum(['true', 'false', '1', '0', ''])
