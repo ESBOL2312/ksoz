@@ -13,7 +13,7 @@ FROM base AS build
 RUN npm ci
 COPY packages/shared packages/shared
 COPY apps/api apps/api
-RUN npm run build
+RUN npm run build -w @ksoz/shared && npm run build -w @ksoz/api
 
 FROM base AS prod-deps
 RUN npm ci --omit=dev --workspace @ksoz/api --workspace @ksoz/shared
