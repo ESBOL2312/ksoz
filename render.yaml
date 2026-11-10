@@ -20,8 +20,8 @@ services:
         sync: false
       - key: BOT_USERNAME
         sync: false
-      - key: WEBHOOK_SECRET
-        generateValue: true
+      - key: WEBHOOK_SECRET # только латиница, цифры, _ и - (требование Telegram)
+        sync: false
       - key: WEB_ORIGIN # https://esbol2312.github.io (без пути)
         sync: false
       - key: MINIAPP_URL # полный адрес миниаппа на GitHub Pages

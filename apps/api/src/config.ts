@@ -22,7 +22,11 @@ const EnvSchema = z
     BOT_TOKEN: z.string().min(1),
     BOT_USERNAME: z.string().default('ksoz_bot'),
     WEBAPP_SHORT_NAME: z.string().default('app'),
-    WEBHOOK_SECRET: z.string().default(DEV_WEBHOOK_SECRET),
+    // Telegram принимает secret_token только из A-Z, a-z, 0-9, _ и - (1–256 символов)
+    WEBHOOK_SECRET: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{1,256}$/, 'WEBHOOK_SECRET: only A-Z, a-z, 0-9, _ and - (Telegram secret_token)')
+      .default(DEV_WEBHOOK_SECRET),
     WEB_ORIGIN: z.string().default('http://localhost:5173'),
     PUBLIC_URL: z.string().default('http://localhost:3000'),
     MINIAPP_URL: z.string().default('http://localhost:5173'),
