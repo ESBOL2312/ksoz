@@ -230,7 +230,7 @@ const look = computed(() => (props.mood === 'think' ? { x: 3, y: -4 } : props.mo
     </g>
 
     <!-- сон -->
-    <g v-if="mood === 'sleep'" class="zzz" :fill="'#9EA6D6'" font-family="Unbounded, sans-serif" font-weight="900">
+    <g v-if="mood === 'sleep'" class="zzz" :fill="'#9EA6D6'" font-family="Rubik, sans-serif" font-weight="900">
       <text x="150" y="40" font-size="20">z</text>
       <text x="166" y="22" font-size="14">z</text>
       <text x="178" y="8" font-size="10">z</text>

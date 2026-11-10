@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@fontsource/nunito": "^5.3.0",
-    "@fontsource/unbounded": "^5.3.0",
+    "@fontsource/rubik": "^5.3.0",
     "@iconify-json/lucide": "^1.2.151",
     "@ksoz/shared": "*",
     "@nuxt/ui": "^4.0.0",

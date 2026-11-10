@@ -2,9 +2,10 @@ import '@fontsource/nunito/500.css';
 import '@fontsource/nunito/700.css';
 import '@fontsource/nunito/800.css';
 import '@fontsource/nunito/900.css';
-import '@fontsource/unbounded/500.css';
-import '@fontsource/unbounded/700.css';
-import '@fontsource/unbounded/900.css';
+import '@fontsource/rubik/600.css';
+import '@fontsource/rubik/700.css';
+import '@fontsource/rubik/800.css';
+import '@fontsource/rubik/900.css';
 import './assets/main.css';
 
 import ui from '@nuxt/ui/vue-plugin';
