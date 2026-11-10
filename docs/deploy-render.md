@@ -32,13 +32,16 @@ Session pooler на бесплатном тарифе пускает 15 клие
 
 ## 3. Фронтенд на GitHub Pages
 
-На Pages нет прокси `/api`, поэтому миниапп собирается с адресом API:
+Миниапп собирается и выкладывается workflow `.github/workflows/pages.yml` при каждом пуше в `main`,
+который затрагивает `apps/web` или `packages/shared` (или вручную: Actions → Deploy web to Pages → Run workflow).
 
-```sh
-VITE_API_URL=https://ksoz-api.onrender.com VITE_BOT_USERNAME=<бот> VITE_DEV_USER= npm run build -w @ksoz/web
-```
+Один раз:
+1. Settings → Pages → **Source: GitHub Actions**.
+2. Settings → Secrets and variables → Actions → **Variables**: `VITE_BOT_USERNAME` = имя бота без `@`
+   (по желанию `VITE_API_URL`, по умолчанию `https://ksoz-api.onrender.com`).
 
-В BotFather (Bot Settings → Menu Button / Configure Mini App) указать адрес на Pages.
+Адрес: `https://esbol2312.github.io/ksoz/`. Его же указать в Render (`MINIAPP_URL`) и в BotFather
+(Bot Settings → Menu Button / Configure Mini App). Роутер работает на hash-ссылках, поэтому отдельный 404.html не нужен.
 
 ## Запасной пинг
 
