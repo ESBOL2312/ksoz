@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { useCities, useMe, usePatchMe, type PatchMeBody } from '@/api';
+import { useCities, useHome, useMe, usePatchMe, type PatchMeBody } from '@/api';
+import Barys from '@/shared/mascot/Barys.vue';
+import { wearFrom } from '@/shared/mascot/mascot';
 import { LEVELS, type Level, type Notify } from '@ksoz/shared';
-import Art from '@/shared/art/Art.vue';
 import { haptics, useBackButton } from '@/telegram';
 
 const router = useRouter();
@@ -11,6 +12,8 @@ const toast = useToast();
 const me = useMe();
 const cities = useCities();
 const patch = usePatchMe();
+const home = useHome();
+const wear = computed(() => wearFrom(home.data.value?.equipped));
 
 const goBack = () => router.push('/');
 const hasTgBack = useBackButton(goBack);
@@ -75,11 +78,11 @@ function setNotify(key: keyof Notify, value: boolean) {
     </div>
 
     <template v-else-if="me.data.value">
-      <div class="flex items-end gap-3 rounded-[20px] px-1" style="background: linear-gradient(transparent 55%, rgba(199, 56, 43, 0.25))">
-        <Art name="hero" class="w-[88px] shrink-0" />
+      <div class="flex items-end gap-3 rounded-[22px] px-2 pt-3" style="background: linear-gradient(160deg, #3fb6dc, #1f7fae); box-shadow: 0 5px 0 #165767">
+        <Barys mood="wave" v-bind="wear" class="-mb-1 w-[110px] shrink-0" />
         <div class="grid gap-1 pb-3">
-          <h1 class="font-display text-xl font-black break-words text-gold-400">{{ me.data.value.first_name }}</h1>
-          <span class="text-[13px] font-bold text-night-200">Уровень {{ me.data.value.level }}</span>
+          <h1 class="font-display text-xl font-black break-words text-white [text-shadow:0_2px_0_#165767]">{{ me.data.value.first_name }}</h1>
+          <span class="text-[13px] font-bold text-sky-50">Уровень {{ me.data.value.level }} · серия {{ me.data.value.streak_current }}, рекорд {{ me.data.value.streak_best }}</span>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import Art from '@/shared/art/Art.vue';
+import Barys from '@/shared/mascot/Barys.vue';
 import { num, words } from '@/shared/format';
 import { useLessonStore } from '@/stores/lesson';
 
@@ -11,7 +12,10 @@ const router = useRouter();
 <template>
   <div class="flex flex-1 flex-col gap-4">
     <div class="grid justify-items-center gap-2 pt-4 text-center">
-      <Art name="eagle" class="h-20 w-32" />
+      <div class="relative grid place-items-center">
+        <div class="rays pointer-events-none absolute size-[240px] animate-[spin_18s_linear_infinite] rounded-full" />
+        <Barys mood="happy" class="relative w-36" label="Барыс радуется" />
+      </div>
       <h1 class="font-display text-3xl font-black text-gold-400 [text-shadow:0_4px_0_var(--color-felt-800)]">Сабақ бітті!</h1>
       <div class="mt-1 flex items-center gap-2 rounded-full border-2 border-gold-400 bg-ink py-1.5 pl-2 pr-4 font-display text-xl font-black text-gold-400">
         <Art name="coin" class="size-7" />+{{ num(lesson.stats.earned) }}
@@ -51,3 +55,11 @@ const router = useRouter();
     </div>
   </div>
 </template>
+
+<style scoped>
+.rays {
+  background: repeating-conic-gradient(rgba(242, 180, 44, 0.2) 0 10deg, transparent 10deg 20deg);
+  -webkit-mask: radial-gradient(circle, #000 25%, transparent 68%);
+  mask: radial-gradient(circle, #000 25%, transparent 68%);
+}
+</style>

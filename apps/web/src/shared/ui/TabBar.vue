@@ -15,7 +15,7 @@ const tabs: { to: string; name: string; label: string; icon: ArtName }[] = [
 
 <template>
   <nav
-    class="grid grid-cols-4 border-t-3 border-gold-400 bg-milk px-2 pt-2 text-ink-2"
+    class="grid grid-cols-4 rounded-t-[22px] border-t border-white/10 bg-night-950/95 px-2 pt-2 text-night-300 shadow-[0_-8px_24px_rgba(5,10,30,0.45)] backdrop-blur-md"
     style="padding-bottom: calc(10px + var(--tg-safe-bottom))"
     aria-label="Разделы"
   >
@@ -23,12 +23,17 @@ const tabs: { to: string; name: string; label: string; icon: ArtName }[] = [
       v-for="t in tabs"
       :key="t.name"
       :to="t.to"
-      class="grid justify-items-center gap-0.5 rounded-xl py-1 text-[11px] font-extrabold transition-transform"
-      :class="route.name === t.name ? 'text-felt-600 [&>svg]:-translate-y-0.5' : ''"
+      class="grid justify-items-center gap-1 py-1 text-[11px] font-extrabold transition-colors"
+      :class="route.name === t.name ? 'text-gold-400' : ''"
       :aria-current="route.name === t.name ? 'page' : undefined"
       @click="haptics.select()"
     >
-      <Art :name="t.icon" class="size-6.5" />
+      <span
+        class="grid h-8 w-14 place-items-center rounded-full transition-all duration-200"
+        :class="route.name === t.name ? 'bg-gold-400 text-night-950 shadow-[0_3px_0_var(--color-gold-600)]' : ''"
+      >
+        <Art :name="t.icon" class="size-6" />
+      </span>
       {{ t.label }}
     </RouterLink>
   </nav>

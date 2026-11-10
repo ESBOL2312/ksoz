@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import Art from '@/shared/art/Art.vue';
+import Barys from '@/shared/mascot/Barys.vue';
 import { useLessonStore } from '@/stores/lesson';
 import ExampleLine from './ExampleLine.vue';
 import SrsLine from './SrsLine.vue';
@@ -12,6 +13,7 @@ const mine = computed(() => [...lesson.lastInput]);
 const answer = computed(() => [...(res.value?.answer ?? '')]);
 
 const TITLES = { correct: 'Дұрыс!', almost: 'Дерлік!', wrong: 'Қате' } as const;
+const MOODS = { correct: 'happy', almost: 'think', wrong: 'sad' } as const;
 </script>
 
 <template>
@@ -19,31 +21,34 @@ const TITLES = { correct: 'Дұрыс!', almost: 'Дерлік!', wrong: 'Қат
     <!-- ответ ушёл в очередь -->
     <template v-if="lesson.savedOffline || !res">
       <div class="grid flex-1 content-center justify-items-center gap-3 text-center">
-        <Art name="horn" class="size-16" style="color: #f2b42c" />
+        <Barys mood="think" class="w-32" />
         <p class="max-w-[17rem] font-display text-lg font-bold leading-snug">Ответ сохранён, отправим, когда появится сеть</p>
       </div>
       <button type="button" class="chunky chunky-gold w-full px-4 py-[15px] text-[15px]" @click="lesson.next()">Дальше</button>
     </template>
 
     <template v-else>
-      <div class="relative grid h-[150px] place-items-center">
-        <div v-if="res.verdict !== 'wrong'" class="rays pointer-events-none absolute left-1/2 top-[-55px] -ml-[130px] size-[260px] animate-[spin_18s_linear_infinite] rounded-full" />
+      <div class="relative grid h-[170px] grid-cols-[132px_1fr] items-end">
+        <div v-if="res.verdict !== 'wrong'" class="rays pointer-events-none absolute -top-[50px] -left-[64px] size-[260px] animate-[spin_18s_linear_infinite] rounded-full" />
+        <Barys :key="res.verdict" :mood="MOODS[res.verdict]" class="relative w-[132px]" />
         <template v-if="res.verdict !== 'wrong' && res.altyn.earned > 0">
-          <Art name="coin" class="absolute left-10 top-[30px] size-[26px] animate-[fly_2.6s_ease-in-out_infinite]" />
-          <Art name="coin" class="absolute right-11 top-4 size-5 animate-[fly_2.6s_ease-in-out_0.5s_infinite]" />
-          <Art name="coin" class="absolute bottom-5 right-[70px] size-[18px] animate-[fly_2.6s_ease-in-out_1s_infinite]" />
+          <Art name="coin" class="absolute left-[44%] top-3 size-[26px] animate-[fly_2.6s_ease-in-out_infinite]" />
+          <Art name="coin" class="absolute right-3 top-6 size-5 animate-[fly_2.6s_ease-in-out_0.5s_infinite]" />
+          <Art name="coin" class="absolute bottom-16 right-[10%] size-[18px] animate-[fly_2.6s_ease-in-out_1s_infinite]" />
         </template>
-        <h2
-          class="relative -rotate-[4deg] font-display text-[46px] font-black"
-          :class="res.verdict === 'wrong' ? 'text-felt-400 [text-shadow:0_5px_0_var(--color-felt-950)]' : 'text-gold-400 [text-shadow:0_5px_0_var(--color-felt-800)]'"
-        >
-          {{ TITLES[res.verdict] }}
-        </h2>
-        <div
-          v-if="res.altyn.earned > 0"
-          class="absolute bottom-1 flex items-center gap-1.5 rounded-full border-2 border-gold-400 bg-ink py-[5px] pl-1.5 pr-3.5 font-display text-lg font-black text-gold-400"
-        >
-          <Art name="coin" class="size-[26px]" />+{{ res.altyn.earned }}
+        <div class="relative grid justify-items-center gap-3 pb-4">
+          <h2
+            class="-rotate-[4deg] font-display text-[40px] leading-none font-black"
+            :class="res.verdict === 'wrong' ? 'text-felt-400 [text-shadow:0_5px_0_var(--color-felt-950)]' : 'text-gold-400 [text-shadow:0_5px_0_var(--color-felt-800)]'"
+          >
+            {{ TITLES[res.verdict] }}
+          </h2>
+          <div
+            v-if="res.altyn.earned > 0"
+            class="flex items-center gap-1.5 rounded-full border-2 border-gold-400 bg-ink py-[5px] pl-1.5 pr-3.5 font-display text-lg font-black text-gold-400"
+          >
+            <Art name="coin" class="size-[26px]" />+{{ res.altyn.earned }}
+          </div>
         </div>
       </div>
 

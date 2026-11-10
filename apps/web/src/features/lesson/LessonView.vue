@@ -4,6 +4,7 @@ import { onBeforeUnmount, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { invalidateAfterLesson, setBalance, useHome } from '@/api';
 import Art from '@/shared/art/Art.vue';
+import Barys from '@/shared/mascot/Barys.vue';
 import { getWebApp, supports, useBackButton } from '@/telegram';
 import { useLessonStore } from '@/stores/lesson';
 import IntroCard from './IntroCard.vue';
@@ -73,7 +74,7 @@ watch(
 
     <div v-else-if="lesson.stage === 'empty'" class="flex flex-1 flex-col">
       <div class="grid flex-1 content-center justify-items-center gap-3 text-center">
-        <Art name="yurt" class="h-32 w-44 animate-[bob_2.4s_ease-in-out_infinite]" />
+        <Barys mood="sleep" class="w-40" />
         <h1 class="font-display text-2xl font-black text-gold-400">Всё повторено</h1>
         <p class="max-w-[17rem] text-sm font-bold text-night-200">Сейчас нечего повторять. Загляни позже, слова скоро вернутся.</p>
       </div>
@@ -82,7 +83,7 @@ watch(
 
     <div v-else-if="lesson.stage === 'error'" class="flex flex-1 flex-col">
       <div class="grid flex-1 content-center justify-items-center gap-3 text-center">
-        <Art name="horn" class="size-14" style="color: #f2b42c" />
+        <Barys mood="sad" class="w-36" />
         <p class="max-w-[17rem] text-sm font-bold text-night-200">
           {{ lesson.error === 'network' ? 'Нет связи с сервером.' : 'Не удалось загрузить урок.' }}
         </p>
