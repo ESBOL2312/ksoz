@@ -6,17 +6,58 @@ import { setWebhook } from './bot/index.js';
 import { runMigrations } from './db/migrate.js';
 import { seed } from './db/seed.js';
 import { startWorker } from './worker/index.js';
+import { startKeepAlive } from './keepalive.js';
 
-const COMMANDS = ['serve', 'worker', 'migrate', 'seed', 'set-webhook'] as const;
+const COMMANDS = ['serve', 'worker', 'all', 'migrate', 'seed', 'set-webhook'] as const;
 type Command = (typeof COMMANDS)[number];
 
 async function serve() {
   const config = loadConfig();
   const app = await buildApp(config);
+  const keepAlive = config.KEEPALIVE_URL
+    ? startKeepAlive(config.KEEPALIVE_URL, config.KEEPALIVE_MINUTES * 60_000, app.log)
+    : undefined;
   for (const sig of ['SIGINT', 'SIGTERM'] as const) {
-    process.once(sig, () => void app.close().then(() => process.exit(0)));
+    process.once(sig, () => {
+      keepAlive?.stop();
+      void app.close().then(() => process.exit(0));
+    });
   }
   await app.listen({ port: config.PORT, host: '0.0.0.0' });
+}
+
+/**
+ * Всё в одном процессе (для хостинга с одним бесплатным сервисом, например Render):
+ * миграции и сид (оба идемпотентны) → HTTP API + бот → воркер напоминаний.
+ */
+async function all() {
+  const config = loadConfig();
+  const log = pino({ level: config.LOG_LEVEL });
+  const { db, pool } = createDb(config.DATABASE_URL);
+  await runMigrations(db);
+  await seed(db);
+  const app = await buildApp(config, { db });
+  const keepAlive = config.KEEPALIVE_URL
+    ? startKeepAlive(config.KEEPALIVE_URL, config.KEEPALIVE_MINUTES * 60_000, app.log)
+    : undefined;
+  await app.listen({ port: config.PORT, host: '0.0.0.0' });
+  if (config.SET_WEBHOOK_ON_START) {
+    try {
+      log.info({ url: await setWebhook(config) }, 'webhook set');
+    } catch (err) {
+      log.error({ err }, 'setWebhook failed');
+    }
+  }
+  const w = await startWorker({ config, db, log });
+  const shutdown = async () => {
+    keepAlive?.stop();
+    await w.stop();
+    await app.close();
+    await pool.end();
+    process.exit(0);
+  };
+  process.once('SIGINT', () => void shutdown());
+  process.once('SIGTERM', () => void shutdown());
 }
 
 async function worker() {
@@ -48,6 +89,7 @@ async function withDb(fn: (db: ReturnType<typeof createDb>['db']) => Promise<voi
 const handlers: Record<Command, () => Promise<void>> = {
   serve,
   worker,
+  all,
   migrate: () => withDb(runMigrations),
   seed: () => withDb(seed),
   'set-webhook': async () => {
