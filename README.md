@@ -45,6 +45,10 @@ curl -H 'X-Dev-User: 42' localhost:3000/v1/me
 
 Для настоящего бота скопируйте `.env.example` в `.env` и задайте `BOT_TOKEN`, `WEBHOOK_SECRET`, `WEB_ORIGIN` и др.
 
+## Деплой
+
+Бесплатно: Render (API + бот + воркер в одном процессе `node dist/main.js all`, самопинг каждые 9 минут) + Supabase — [docs/deploy-render.md](docs/deploy-render.md), конфигурация в `render.yaml`.
+
 ## Локальная разработка
 
 ```sh

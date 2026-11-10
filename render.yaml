@@ -1,0 +1,35 @@
+# Render Blueprint: бесплатный веб-сервис, в котором в одном процессе работают API, бот и воркер
+# (node dist/main.js all). База — Supabase (Session pooler), см. docs/deploy-render.md.
+services:
+  - type: web
+    name: ksoz-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    dockerCommand: node dist/main.js all
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL # строка Session pooler из Supabase
+        sync: false
+      - key: BOT_TOKEN
+        sync: false
+      - key: BOT_USERNAME
+        sync: false
+      - key: WEBHOOK_SECRET
+        generateValue: true
+      - key: WEB_ORIGIN # https://esbol2312.github.io (без пути)
+        sync: false
+      - key: MINIAPP_URL # полный адрес миниаппа на GitHub Pages
+        sync: false
+      - key: ADMIN_IDS
+        sync: false
+      # PUBLIC_URL и KEEPALIVE_URL берутся из RENDER_EXTERNAL_URL автоматически
+      - key: KEEPALIVE_MINUTES
+        value: "9"
+      - key: SET_WEBHOOK_ON_START
+        value: "true"
