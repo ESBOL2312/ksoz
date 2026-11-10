@@ -17,19 +17,46 @@
         <path d="M20 34V22c0-8-8-12-13-8-3 3-1 8 3 6M20 22c0-8 8-12 13-8 3 3 1 8-3 6M20 14V6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
       </symbol>
       <symbol id="art-horse" viewBox="0 0 120 100">
-        <path d="M30 46 Q10 48 14 76" fill="none" stroke="#3B2314" stroke-width="7" stroke-linecap="round" />
-        <rect x="36" y="56" width="7" height="34" rx="3" fill="#6E3A1E" />
-        <rect x="78" y="56" width="7" height="34" rx="3" fill="#6E3A1E" />
-        <ellipse cx="60" cy="50" rx="33" ry="17" fill="#8A4B2A" />
-        <rect x="46" y="58" width="7" height="32" rx="3" fill="#8A4B2A" />
-        <rect x="88" y="56" width="7" height="34" rx="3" fill="#8A4B2A" />
-        <path d="M80 42 L95 14 L106 18 L94 54 Z" fill="#8A4B2A" />
-        <ellipse cx="104" cy="22" rx="12" ry="7" transform="rotate(28 104 22)" fill="#8A4B2A" />
-        <path d="M93 12 L96 4 L100 12" fill="#6E3A1E" />
-        <path d="M80 44 Q84 26 93 13" fill="none" stroke="#3B2314" stroke-width="6" stroke-linecap="round" />
-        <circle cx="104" cy="18" r="1.8" fill="#1B1736" />
-        <path d="M48 34 Q60 30 72 34 L74 48 Q60 52 46 48 Z" fill="#C7382B" />
-        <path d="M50 40 H70" stroke="#F2B42C" stroke-width="2.5" />
+        <ellipse cx="58" cy="94" rx="40" ry="4.5" fill="#000" opacity=".14" />
+        <!-- хвост -->
+        <path d="M27 48 C12 46 6 60 10 76 C12 82 20 82 18 74 C16 66 20 60 28 58 Z" fill="#4A2A17" />
+        <path d="M16 62 C14 68 15 74 17 77" fill="none" stroke="#6E3E22" stroke-width="2.5" stroke-linecap="round" />
+        <!-- дальние ноги -->
+        <rect x="34" y="60" width="10" height="28" rx="5" fill="#93542C" />
+        <rect x="72" y="60" width="10" height="28" rx="5" fill="#93542C" />
+        <path d="M34 84h10v3a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2zM72 84h10v3a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2z" fill="#2A1A10" />
+        <!-- туловище -->
+        <ellipse cx="56" cy="56" rx="32" ry="19" fill="#B8723F" />
+        <ellipse cx="58" cy="64" rx="22" ry="9" fill="#D69A63" />
+        <!-- ближние ноги -->
+        <rect x="42" y="62" width="10" height="28" rx="5" fill="#B8723F" />
+        <rect x="80" y="62" width="10" height="28" rx="5" fill="#B8723F" />
+        <path d="M42 85h10v3a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2zM80 85h10v3a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2z" fill="#2A1A10" />
+        <path d="M42 82h10M80 82h10" stroke="#F6EBD8" stroke-width="3" />
+        <!-- шея и голова -->
+        <path d="M70 52 C72 36 78 24 88 18 L100 30 C94 38 90 48 86 60 Z" fill="#B8723F" />
+        <ellipse cx="94" cy="24" rx="16" ry="15" fill="#B8723F" />
+        <ellipse cx="105" cy="34" rx="12" ry="9.5" transform="rotate(25 105 34)" fill="#E3B583" />
+        <path d="M96 12 Q100 22 106 30" fill="none" stroke="#F6EBD8" stroke-width="4" stroke-linecap="round" />
+        <circle cx="110" cy="36" r="1.8" fill="#6E3A1E" />
+        <path d="M101 41 q4 2 7 0" fill="none" stroke="#6E3A1E" stroke-width="1.6" stroke-linecap="round" />
+        <!-- глаз -->
+        <ellipse cx="91" cy="23" rx="4.6" ry="5.4" fill="#1B1736" />
+        <circle cx="92.6" cy="21" r="1.8" fill="#fff" />
+        <circle cx="89.6" cy="25.2" r=".9" fill="#fff" />
+        <!-- грива -->
+        <path d="M80 10 C88 4 96 6 98 10 C92 8 88 12 86 15 C82 18 80 26 76 30 C78 36 72 42 70 48 C66 40 70 30 72 24 C70 20 74 14 80 10 Z" fill="#4A2A17" />
+        <!-- уши -->
+        <path d="M84 13 Q80 2 84 -1 Q90 4 91 10 Z" fill="#B8723F" />
+        <path d="M85 10 Q84 4 85 2 Q88 5 89 9 Z" fill="#E3B583" />
+        <path d="M92 10 Q92 0 97 -1 Q100 5 98 12 Z" fill="#A5653A" />
+        <!-- чёлка -->
+        <path d="M86 12 Q92 8 98 12 Q93 12 90 16 Q88 13 86 12Z" fill="#4A2A17" />
+        <!-- тоқым (попона) -->
+        <path d="M42 40 Q56 34 70 40 L72 58 Q56 62 40 58 Z" fill="#C7382B" />
+        <path d="M40 58 Q56 62 72 58 L72 54 Q56 58 40 54 Z" fill="#F2B42C" />
+        <use href="#art-horn" x="48" y="38" width="16" height="16" color="#F2B42C" />
+        <path d="M44 38 Q56 33 68 38" fill="none" stroke="#8E2219" stroke-width="3" stroke-linecap="round" />
       </symbol>
       <symbol id="art-yurt" viewBox="0 0 200 140">
         <path d="M14 132 L18 78 Q100 6 182 78 L186 132 Z" fill="#F6EBD8" />
