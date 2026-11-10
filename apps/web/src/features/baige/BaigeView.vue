@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useBaige, useInvite, useMe, type BaigeScope } from '@/api';
 import Art from '@/shared/art/Art.vue';
+import Barys from '@/shared/mascot/Barys.vue';
 import { days, num } from '@/shared/format';
 import { getWebApp, haptics } from '@/telegram';
 
@@ -111,7 +112,7 @@ async function inviteFriend() {
 
     <!-- город не выбран -->
     <div v-if="noCity" class="card-milk mx-3.5 mt-4 grid justify-items-center gap-3 rounded-[20px] p-5 text-center">
-      <Art name="horse" class="w-24" />
+      <Barys mood="think" class="w-28" />
       <h2 class="font-display text-base font-bold">Выбери город в профиле</h2>
       <p class="text-[13px] font-bold text-ink-2">Тогда ты увидишь скачки земляков и сможешь обогнать их.</p>
       <button class="chunky chunky-gold w-full px-4 py-3.5 text-[15px]" @click="router.push('/profile')">
@@ -136,7 +137,7 @@ async function inviteFriend() {
         v-if="scope === 'friends' && top.every((r) => isMe(r.user_id))"
         class="card-milk mx-3.5 mt-4 grid justify-items-center gap-3 rounded-[20px] p-5 text-center"
       >
-        <Art name="horse" class="w-28" />
+        <Barys mood="wave" class="w-32" />
         <h2 class="font-display text-base font-bold">Пока ты один на старте</h2>
         <p class="text-[13px] font-bold text-ink-2">Позови друга, и вы поскачете наперегонки: чья неделя будет богаче на верные ответы.</p>
         <button class="chunky chunky-gold w-full px-4 py-3.5 text-[15px]" @click="inviteFriend">

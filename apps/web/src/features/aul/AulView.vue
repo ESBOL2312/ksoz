@@ -9,6 +9,7 @@ import CoinPill from '@/shared/ui/CoinPill.vue';
 import StreakPill from '@/shared/ui/StreakPill.vue';
 import { haptics } from '@/telegram';
 import AulScene from './AulScene.vue';
+import { wearFrom, type BarysMood } from '@/shared/mascot/mascot';
 import DailyTasks from './DailyTasks.vue';
 
 const router = useRouter();
@@ -34,18 +35,22 @@ const visibleSteps = computed(() => {
   return AUL_STAGES.slice(from, from + 4).map((name, i) => ({ name, now: from + i === s }));
 });
 
-const extraYurt = computed(() => !!home.value?.equipped.some((e) => e.category === 'uy'));
-const extraHorse = computed(() => !!home.value?.equipped.some((e) => e.category === 'mal'));
-const horseItem = computed(() => home.value?.equipped.find((e) => e.category === 'mal'));
-const tag = computed(() =>
-  horseItem.value ? `Это <i>${horseItem.value.kk}</i>, твой скакун` : 'Это <i>тұлпар</i>, твой скакун',
-);
+const wear = computed(() => wearFrom(home.value?.equipped));
 
 const mode = computed<'review' | 'new' | 'idle'>(() => {
   const h = home.value;
   if (!h) return 'idle';
   if (h.due_count > 0) return 'review';
   return h.new_left_today > 0 ? 'new' : 'idle';
+});
+
+const mood = computed<BarysMood>(() => (mode.value === 'review' ? 'wave' : mode.value === 'idle' ? 'happy' : 'idle'));
+const say = computed(() => {
+  const h = home.value;
+  if (!h) return '';
+  if (mode.value === 'review') return `Сәлем! <i>${words(h.due_count)}</i> ждут повтора`;
+  if (mode.value === 'new') return 'Сәлем! Выучим <i>новые слова</i>?';
+  return '<i>Жарайсың!</i> На сегодня всё, отдыхаем';
 });
 
 function onClaim(code: string) {
@@ -63,8 +68,8 @@ const go = () => router.push('/lesson');
 </script>
 
 <template>
-  <div class="aul-body min-h-full">
-    <div class="flex items-center gap-2 px-3.5 py-2.5">
+  <div class="relative min-h-full">
+    <div class="absolute inset-x-0 top-0 z-10 flex items-center gap-2 px-3.5 py-2.5">
       <RouterLink
         to="/profile"
         class="grid size-[34px] place-items-center rounded-full bg-felt-600 font-display text-xs font-black text-white ring-[3px] ring-gold-400"
@@ -78,7 +83,7 @@ const go = () => router.push('/lesson');
     </div>
 
     <template v-if="isPending">
-      <USkeleton class="h-[300px] rounded-none" />
+      <USkeleton class="h-[340px] rounded-none" />
       <div class="mx-3.5 mt-3 grid gap-3">
         <USkeleton class="h-24 rounded-[20px]" />
         <USkeleton class="h-14 rounded-[18px]" />
@@ -95,9 +100,9 @@ const go = () => router.push('/lesson');
     </div>
 
     <template v-else>
-      <AulScene :extra-yurt="extraYurt" :extra-horse="extraHorse" :tag="tag" />
+      <AulScene :stage="stage" :equipped="home.equipped" :wear="wear" :mood="mood" :say="say" />
 
-      <section class="card-milk relative mx-3.5 -mt-1.5 grid gap-2 rounded-[20px] px-3.5 py-3">
+      <section class="card-milk relative mx-3.5 -mt-4 grid gap-2 rounded-[20px] px-3.5 py-3">
         <div class="flex items-baseline justify-between gap-2">
           <h1 class="font-display text-[15px] font-bold">{{ AUL_STAGES[stage] }}</h1>
           <span class="text-xs font-bold text-ink-2">
@@ -142,20 +147,9 @@ const go = () => router.push('/lesson');
           </span>
         </div>
 
-        <div v-if="home.equipped.length" class="flex flex-wrap justify-center gap-1.5 pt-1">
-          <span v-for="e in home.equipped" :key="e.item_id" class="rounded-lg bg-milk px-2 py-0.5 text-xs font-extrabold text-ink">
-            {{ e.kk }}
-          </span>
-        </div>
       </section>
 
       <DailyTasks :tasks="home.tasks" :claiming="claiming" @claim="onClaim" />
     </template>
   </div>
 </template>
-
-<style scoped>
-.aul-body {
-  background: linear-gradient(#ff9f5a 0, #ffc77a 150px, #ffe6b0 290px, var(--color-night-900) 290.5px);
-}
-</style>

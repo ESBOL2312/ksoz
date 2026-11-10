@@ -5,6 +5,7 @@ import { api, ApiError, usePatchMe } from '@/api';
 import type { ImportLocalBody } from '@/api';
 import type { Level } from '@ksoz/shared';
 import Art from '@/shared/art/Art.vue';
+import Barys from '@/shared/mascot/Barys.vue';
 import { haptics, safeLocal } from '@/telegram';
 import { useSessionStore } from '@/stores/session';
 import { PROTOTYPE_WORDS } from './prototypeWords';
@@ -92,10 +93,13 @@ async function finish() {
         <h1 class="font-display text-[44px] leading-none font-black text-gold-400 [text-shadow:0_4px_0_var(--color-felt-800)]">
           Сөз ауылы
         </h1>
-        <div class="relative h-56 w-full">
-          <Art name="yurt" class="absolute bottom-0 left-1/2 w-56 -translate-x-[40%]" />
-          <Art name="horse" class="absolute bottom-0 left-2 w-24" />
-          <Art name="hero" class="absolute bottom-0 left-[26%] w-[84px] [animation:bob_2.4s_ease-in-out_infinite]" />
+        <div class="relative h-60 w-full">
+          <div class="absolute inset-x-6 bottom-2 h-28 rounded-[50%] bg-sky-500/15 blur-xl" />
+          <Art name="yurt" class="absolute bottom-3 right-0 w-40 opacity-90" />
+          <Barys mood="wave" hat class="absolute bottom-0 left-[8%] w-44" label="Барыс" />
+          <div class="absolute top-2 right-2 max-w-[11rem] rounded-2xl bg-white px-3 py-2 text-left text-[13px] leading-snug font-extrabold text-ink shadow-[0_4px_0_rgba(0,0,0,0.15)]">
+            Сәлем! Мен <span class="text-felt-600">Барыс</span>. Үйренейік қазақша!
+          </div>
         </div>
         <ul class="grid gap-2 text-left text-[15px] font-bold text-night-100">
           <li class="flex items-center gap-3 rounded-2xl bg-night-800 px-4 py-3">
@@ -116,7 +120,7 @@ async function finish() {
     <template v-else-if="step === 'level'">
       <div class="grid flex-1 content-center gap-5">
         <div class="grid justify-items-center gap-3 text-center">
-          <Art name="hero" class="w-20" />
+          <Barys mood="think" class="w-28" />
           <h1 class="font-display text-2xl font-black text-gold-400">Какой у тебя уровень?</h1>
           <p class="text-sm font-bold text-night-200">Подберём слова под тебя. Потом можно поменять в профиле.</p>
         </div>
@@ -140,7 +144,7 @@ async function finish() {
     <!-- 3. перенос прогресса -->
     <template v-else>
       <div class="grid flex-1 content-center justify-items-center gap-5 text-center">
-        <Art name="yurt" class="w-40" />
+        <Barys mood="happy" class="w-36" />
         <h1 class="font-display text-2xl font-black text-gold-400">Перенести прогресс из старой версии?</h1>
         <p class="max-w-xs text-sm font-bold text-night-200">
           Нашли твои слова из прототипа: {{ legacyCount }}. Перенесём их в повторы, ничего не потеряется.

@@ -4,7 +4,7 @@ import { computed, onBeforeUnmount, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { invalidateAfterLesson, isDevFallback, onUnauthorized, useMe, usePatchMe } from '@/api';
 import ArtSprite from '@/shared/art/ArtSprite.vue';
-import Art from '@/shared/art/Art.vue';
+import Barys from '@/shared/mascot/Barys.vue';
 import TabBar from '@/shared/ui/TabBar.vue';
 import { useOutboxStore } from '@/stores/outbox';
 import { useSessionStore } from '@/stores/session';
@@ -68,7 +68,7 @@ onBeforeUnmount(() => {
       v-if="blocked || session.unauthorized"
       class="grid min-h-dvh place-content-center justify-items-center gap-4 px-6 text-center"
     >
-      <Art name="yurt" class="w-40" />
+      <Barys :mood="session.unauthorized ? 'sleep' : 'wave'" class="w-40" />
       <h1 class="font-display text-2xl font-black text-gold-400">Сөз ауылы</h1>
       <p class="max-w-xs text-night-200">
         {{

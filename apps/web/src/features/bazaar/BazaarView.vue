@@ -6,8 +6,9 @@ import { useBazaar, useHome } from '@/api/queries';
 import { useEquip, usePurchase } from '@/api/mutations';
 import type { BazaarItem } from '@/api/endpoints';
 import { haptics } from '@/telegram';
-import Art from '@/shared/art/Art.vue';
 import CoinPill from '@/shared/ui/CoinPill.vue';
+import Barys from '@/shared/mascot/Barys.vue';
+import { wearFrom } from '@/shared/mascot/mascot';
 import { CATEGORY_LABELS, num } from '@/shared/format';
 import ItemCard from './ItemCard.vue';
 import PurchaseModal from './PurchaseModal.vue';
@@ -24,6 +25,7 @@ const items = computed(() => data.value?.items ?? []);
 const shown = computed(() => (cat.value === 'all' ? items.value : items.value.filter((i) => i.category === cat.value)));
 const worn = computed(() => items.value.filter((i) => i.equipped));
 const balance = computed(() => home.value?.altyn);
+const wear = computed(() => wearFrom(worn.value));
 
 const picked = ref<BazaarItem | null>(null);
 const modalOpen = ref(false);
@@ -89,16 +91,16 @@ function confirm() {
       <CoinPill :value="balance" />
     </div>
 
-    <div class="grid grid-cols-[120px_1fr] items-end gap-3 bg-gradient-to-b from-transparent from-55% to-felt-600/25 px-3.5 pt-1.5">
-      <Art name="hero" class="-mb-1 w-[110px]" label="Твой батыр" />
-      <div class="grid gap-2 pb-3.5">
-        <h2 class="font-display text-base font-bold">Твой батыр</h2>
+    <div class="showcase mx-3.5 grid grid-cols-[124px_1fr] items-end gap-3 overflow-hidden rounded-[22px] px-2 pt-3">
+      <Barys mood="idle" v-bind="wear" class="-mb-1 w-[124px]" label="Твой Барыс" />
+      <div class="grid gap-2 pb-4">
+        <h2 class="font-display text-base font-bold text-white">Твой Барыс</h2>
         <div v-if="worn.length" class="flex flex-wrap gap-1.5">
           <span v-for="w in worn" :key="w.id" class="rounded-[9px] bg-milk px-2 py-0.5 text-xs font-extrabold text-ink">
             {{ w.kk }} <em class="font-bold text-ink-2 not-italic">{{ w.ru }}</em>
           </span>
         </div>
-        <p v-else class="text-xs font-bold text-night-300">Пока ничего не надето</p>
+        <p v-else class="text-xs font-bold text-sky-100">Купи тақию или шапан, и Барыс сразу их наденет</p>
       </div>
     </div>
 
@@ -133,3 +135,12 @@ function confirm() {
     <PurchaseModal v-model:open="modalOpen" :item="picked" :pending="purchase.isPending.value" @confirm="confirm" />
   </div>
 </template>
+
+<style scoped>
+.showcase {
+  background:
+    radial-gradient(circle at 22% 70%, rgba(255, 255, 255, 0.28), transparent 45%),
+    linear-gradient(160deg, #3fb6dc, #1f7fae);
+  box-shadow: 0 5px 0 #165767;
+}
+</style>

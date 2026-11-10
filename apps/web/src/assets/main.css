@@ -9,7 +9,7 @@
  */
 @theme static {
   --font-sans: "Nunito", "Segoe UI", system-ui, sans-serif;
-  --font-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --font-display: "Rubik", "Nunito", system-ui, sans-serif;
 
   --color-felt-50: #fdf3f2;
   --color-felt-100: #fbe4e1;

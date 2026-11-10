@@ -17,19 +17,46 @@
         <path d="M20 34V22c0-8-8-12-13-8-3 3-1 8 3 6M20 22c0-8 8-12 13-8 3 3 1 8-3 6M20 14V6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
       </symbol>
       <symbol id="art-horse" viewBox="0 0 120 100">
-        <path d="M30 46 Q10 48 14 76" fill="none" stroke="#3B2314" stroke-width="7" stroke-linecap="round" />
-        <rect x="36" y="56" width="7" height="34" rx="3" fill="#6E3A1E" />
-        <rect x="78" y="56" width="7" height="34" rx="3" fill="#6E3A1E" />
-        <ellipse cx="60" cy="50" rx="33" ry="17" fill="#8A4B2A" />
-        <rect x="46" y="58" width="7" height="32" rx="3" fill="#8A4B2A" />
-        <rect x="88" y="56" width="7" height="34" rx="3" fill="#8A4B2A" />
-        <path d="M80 42 L95 14 L106 18 L94 54 Z" fill="#8A4B2A" />
-        <ellipse cx="104" cy="22" rx="12" ry="7" transform="rotate(28 104 22)" fill="#8A4B2A" />
-        <path d="M93 12 L96 4 L100 12" fill="#6E3A1E" />
-        <path d="M80 44 Q84 26 93 13" fill="none" stroke="#3B2314" stroke-width="6" stroke-linecap="round" />
-        <circle cx="104" cy="18" r="1.8" fill="#1B1736" />
-        <path d="M48 34 Q60 30 72 34 L74 48 Q60 52 46 48 Z" fill="#C7382B" />
-        <path d="M50 40 H70" stroke="#F2B42C" stroke-width="2.5" />
+        <ellipse cx="58" cy="94" rx="40" ry="4.5" fill="#000" opacity=".14" />
+        <!-- хвост -->
+        <path d="M27 48 C12 46 6 60 10 76 C12 82 20 82 18 74 C16 66 20 60 28 58 Z" fill="#4A2A17" />
+        <path d="M16 62 C14 68 15 74 17 77" fill="none" stroke="#6E3E22" stroke-width="2.5" stroke-linecap="round" />
+        <!-- дальние ноги -->
+        <rect x="34" y="60" width="10" height="28" rx="5" fill="#93542C" />
+        <rect x="72" y="60" width="10" height="28" rx="5" fill="#93542C" />
+        <path d="M34 84h10v3a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2zM72 84h10v3a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2z" fill="#2A1A10" />
+        <!-- туловище -->
+        <ellipse cx="56" cy="56" rx="32" ry="19" fill="#B8723F" />
+        <ellipse cx="58" cy="64" rx="22" ry="9" fill="#D69A63" />
+        <!-- ближние ноги -->
+        <rect x="42" y="62" width="10" height="28" rx="5" fill="#B8723F" />
+        <rect x="80" y="62" width="10" height="28" rx="5" fill="#B8723F" />
+        <path d="M42 85h10v3a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2zM80 85h10v3a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2z" fill="#2A1A10" />
+        <path d="M42 82h10M80 82h10" stroke="#F6EBD8" stroke-width="3" />
+        <!-- шея и голова -->
+        <path d="M70 52 C72 36 78 24 88 18 L100 30 C94 38 90 48 86 60 Z" fill="#B8723F" />
+        <ellipse cx="94" cy="24" rx="16" ry="15" fill="#B8723F" />
+        <ellipse cx="105" cy="34" rx="12" ry="9.5" transform="rotate(25 105 34)" fill="#E3B583" />
+        <path d="M96 12 Q100 22 106 30" fill="none" stroke="#F6EBD8" stroke-width="4" stroke-linecap="round" />
+        <circle cx="110" cy="36" r="1.8" fill="#6E3A1E" />
+        <path d="M101 41 q4 2 7 0" fill="none" stroke="#6E3A1E" stroke-width="1.6" stroke-linecap="round" />
+        <!-- глаз -->
+        <ellipse cx="91" cy="23" rx="4.6" ry="5.4" fill="#1B1736" />
+        <circle cx="92.6" cy="21" r="1.8" fill="#fff" />
+        <circle cx="89.6" cy="25.2" r=".9" fill="#fff" />
+        <!-- грива -->
+        <path d="M80 10 C88 4 96 6 98 10 C92 8 88 12 86 15 C82 18 80 26 76 30 C78 36 72 42 70 48 C66 40 70 30 72 24 C70 20 74 14 80 10 Z" fill="#4A2A17" />
+        <!-- уши -->
+        <path d="M84 13 Q80 2 84 -1 Q90 4 91 10 Z" fill="#B8723F" />
+        <path d="M85 10 Q84 4 85 2 Q88 5 89 9 Z" fill="#E3B583" />
+        <path d="M92 10 Q92 0 97 -1 Q100 5 98 12 Z" fill="#A5653A" />
+        <!-- чёлка -->
+        <path d="M86 12 Q92 8 98 12 Q93 12 90 16 Q88 13 86 12Z" fill="#4A2A17" />
+        <!-- тоқым (попона) -->
+        <path d="M42 40 Q56 34 70 40 L72 58 Q56 62 40 58 Z" fill="#C7382B" />
+        <path d="M40 58 Q56 62 72 58 L72 54 Q56 58 40 54 Z" fill="#F2B42C" />
+        <use href="#art-horn" x="48" y="38" width="16" height="16" color="#F2B42C" />
+        <path d="M44 38 Q56 33 68 38" fill="none" stroke="#8E2219" stroke-width="3" stroke-linecap="round" />
       </symbol>
       <symbol id="art-yurt" viewBox="0 0 200 140">
         <path d="M14 132 L18 78 Q100 6 182 78 L186 132 Z" fill="#F6EBD8" />
@@ -44,32 +71,6 @@
         <use href="#art-horn" x="90" y="104" width="20" height="20" color="#F2B42C" />
         <ellipse cx="100" cy="34" rx="16" ry="5" fill="#8A4B2A" />
         <path d="M90 34 Q100 22 110 34" fill="none" stroke="#6E3A1E" stroke-width="3" />
-      </symbol>
-      <symbol id="art-hero" viewBox="0 0 120 190">
-        <ellipse cx="60" cy="182" rx="36" ry="6" fill="#000" opacity=".18" />
-        <rect x="40" y="160" width="16" height="22" rx="5" fill="#2A1A10" />
-        <rect x="64" y="160" width="16" height="22" rx="5" fill="#2A1A10" />
-        <path d="M32 82 Q60 72 88 82 L100 166 Q60 174 20 166 Z" fill="#C7382B" />
-        <path d="M20 166 Q60 174 100 166 L98 156 Q60 164 22 156 Z" fill="#F2B42C" />
-        <path d="M60 78 L56 168 M64 78 L64 168" stroke="#F2B42C" stroke-width="4" />
-        <ellipse cx="26" cy="118" rx="10" ry="30" transform="rotate(10 26 118)" fill="#A82E22" />
-        <ellipse cx="94" cy="118" rx="10" ry="30" transform="rotate(-10 94 118)" fill="#A82E22" />
-        <circle cx="22" cy="146" r="7" fill="#E5AE86" />
-        <circle cx="98" cy="146" r="7" fill="#E5AE86" />
-        <rect x="32" y="114" width="56" height="9" rx="3" fill="#F2B42C" />
-        <circle cx="60" cy="118" r="5" fill="#19AECB" stroke="#B97F12" stroke-width="2" />
-        <circle cx="60" cy="56" r="24" fill="#E5AE86" />
-        <circle cx="51" cy="57" r="3" fill="#1B1736" />
-        <circle cx="69" cy="57" r="3" fill="#1B1736" />
-        <circle cx="46" cy="65" r="4" fill="#F08A7A" opacity=".55" />
-        <circle cx="74" cy="65" r="4" fill="#F08A7A" opacity=".55" />
-        <path d="M53 67 Q60 73 67 67" fill="none" stroke="#1B1736" stroke-width="2.5" stroke-linecap="round" />
-        <path d="M38 42 Q60 6 82 42 Z" fill="#C7382B" />
-        <path d="M48 26 Q60 20 72 26" fill="none" stroke="#F2B42C" stroke-width="2.5" />
-        <rect x="33" y="38" width="54" height="12" rx="6" fill="#5B3A22" />
-        <path d="M37 42h46" stroke="#7A5233" stroke-width="2" stroke-dasharray="3 3" />
-        <path d="M60 16 C56 6 60 0 66 0 C64 6 66 10 62 16 Z" fill="#fff" />
-        <path d="M61 15 C60 9 62 5 65 2" stroke="#D9D9E8" stroke-width="1.2" fill="none" />
       </symbol>
       <symbol id="art-dombra" viewBox="0 0 60 170">
         <rect x="26" y="6" width="8" height="98" rx="3" fill="#8A4B2A" />
@@ -104,6 +105,81 @@
         <circle cx="100" cy="46" r="11" fill="#C79A55" />
         <path d="M100 48 L108 52 L100 56 Z" fill="#F2B42C" />
         <circle cx="104" cy="44" r="1.8" fill="#1B1736" />
+      </symbol>
+      <symbol id="art-takiya" viewBox="0 0 100 80">
+        <ellipse cx="50" cy="70" rx="38" ry="6" fill="#000" opacity=".12" />
+        <path d="M14 62 Q14 20 50 18 Q86 20 86 62 Q50 52 14 62 Z" fill="#C7382B" />
+        <path d="M14 62 Q50 52 86 62 L86 52 Q50 42 14 52 Z" fill="#8E2219" />
+        <path d="M30 30 Q50 22 70 30" fill="none" stroke="#E2675B" stroke-width="3" stroke-linecap="round" />
+        <use href="#art-horn" x="38" y="26" width="24" height="24" color="#F2B42C" />
+        <use href="#art-horn" x="18" y="34" width="16" height="16" color="#F2B42C" />
+        <use href="#art-horn" x="66" y="34" width="16" height="16" color="#F2B42C" />
+        <path d="M50 19 C42 6 46 -2 56 -4 C53 4 58 10 53 19 Z" fill="#fff" stroke="#D9D9E8" stroke-width="1.5" />
+      </symbol>
+      <symbol id="art-etik" viewBox="0 0 110 90">
+        <ellipse cx="55" cy="84" rx="44" ry="5" fill="#000" opacity=".12" />
+        <g transform="translate(26 -2)">
+          <rect x="30" y="8" width="26" height="54" rx="6" fill="#5A2E15" />
+          <path d="M22 70 q-8-10 0-10 l8 4 h26 q12 0 12 10 q0 8-10 8 H30 q-12 0-8-12z" fill="#5A2E15" />
+          <path d="M30 16h26" stroke="#B97F12" stroke-width="6" />
+        </g>
+        <rect x="30" y="12" width="26" height="54" rx="6" fill="#8A4B2A" />
+        <path d="M22 74 q-8-10 0-10 l8 4 h26 q12 0 12 10 q0 8-10 8 H30 q-12 0-8-12z" fill="#8A4B2A" />
+        <path d="M30 20h26" stroke="#F2B42C" stroke-width="6" />
+        <use href="#art-horn" x="33" y="32" width="20" height="20" color="#F2B42C" />
+        <path d="M24 82h42" stroke="#3B2314" stroke-width="4" stroke-linecap="round" />
+      </symbol>
+      <symbol id="art-cat" viewBox="0 0 100 100">
+        <ellipse cx="50" cy="93" rx="32" ry="5" fill="#000" opacity=".12" />
+        <path d="M72 86 C96 84 96 56 82 54" fill="none" stroke="#D9772F" stroke-width="9" stroke-linecap="round" />
+        <path d="M24 92 Q20 56 50 52 Q80 56 76 92 Z" fill="#F0974A" />
+        <path d="M40 92 Q40 70 50 68 Q60 70 60 92 Z" fill="#FBE4C8" />
+        <path d="M30 66l8 4M28 76l8 2M70 66l-8 4M72 76l-8 2" stroke="#D9772F" stroke-width="3" stroke-linecap="round" />
+        <path d="M24 40 L22 12 L42 26 Z M76 40 L78 12 L58 26 Z" fill="#F0974A" />
+        <path d="M27 32 L26 19 L36 26 Z M73 32 L74 19 L64 26 Z" fill="#F7B9A6" />
+        <ellipse cx="50" cy="40" rx="28" ry="23" fill="#F0974A" />
+        <path d="M44 20 l2 8 M50 18 v9 M56 20 l-2 8" stroke="#D9772F" stroke-width="3" stroke-linecap="round" />
+        <ellipse cx="50" cy="50" rx="13" ry="9" fill="#FBE4C8" />
+        <ellipse cx="40" cy="38" rx="4" ry="5.5" fill="#1B1736" />
+        <ellipse cx="60" cy="38" rx="4" ry="5.5" fill="#1B1736" />
+        <circle cx="41.5" cy="36" r="1.6" fill="#fff" /><circle cx="61.5" cy="36" r="1.6" fill="#fff" />
+        <path d="M47 46 h6 l-3 3 z" fill="#E2675B" />
+        <path d="M50 49 v2 M50 51 q-3 3-6 1 M50 51 q3 3 6 1" fill="none" stroke="#1B1736" stroke-width="1.6" stroke-linecap="round" />
+      </symbol>
+      <symbol id="art-sheep" viewBox="0 0 120 100">
+        <ellipse cx="60" cy="93" rx="40" ry="5" fill="#000" opacity=".12" />
+        <rect x="36" y="64" width="8" height="28" rx="3" fill="#3B2314" />
+        <rect x="52" y="66" width="8" height="26" rx="3" fill="#3B2314" />
+        <rect x="68" y="66" width="8" height="26" rx="3" fill="#3B2314" />
+        <rect x="82" y="64" width="8" height="28" rx="3" fill="#3B2314" />
+        <g fill="#F6EBD8" stroke="#E2CFAE" stroke-width="2">
+          <circle cx="40" cy="50" r="15" /><circle cx="58" cy="40" r="16" /><circle cx="78" cy="42" r="15" />
+          <circle cx="90" cy="56" r="13" /><circle cx="70" cy="62" r="15" /><circle cx="48" cy="64" r="14" />
+        </g>
+        <ellipse cx="62" cy="52" rx="26" ry="16" fill="#F6EBD8" />
+        <ellipse cx="22" cy="44" rx="7" ry="4" transform="rotate(-30 22 44)" fill="#3B2314" />
+        <ellipse cx="44" cy="42" rx="7" ry="4" transform="rotate(30 44 42)" fill="#3B2314" />
+        <ellipse cx="32" cy="52" rx="12" ry="15" fill="#4A3020" />
+        <circle cx="32" cy="38" r="8" fill="#F6EBD8" stroke="#E2CFAE" stroke-width="2" />
+        <circle cx="27" cy="50" r="2.2" fill="#fff" /><circle cx="37" cy="50" r="2.2" fill="#fff" />
+        <circle cx="27.5" cy="50.5" r="1.2" fill="#1B1736" /><circle cx="37.5" cy="50.5" r="1.2" fill="#1B1736" />
+        <path d="M28 60 q4 3 8 0" fill="none" stroke="#F6EBD8" stroke-width="1.6" stroke-linecap="round" />
+      </symbol>
+      <symbol id="art-tea" viewBox="0 0 110 90">
+        <ellipse cx="55" cy="82" rx="46" ry="6" fill="#000" opacity=".12" />
+        <path d="M44 22 q-6-8 0-14 M56 22 q-6-8 0-14 M68 22 q-6-8 0-14" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8" />
+        <ellipse cx="56" cy="74" rx="34" ry="7" fill="#E7D3B0" />
+        <path d="M24 34 H88 Q86 72 56 74 Q26 72 24 34 Z" fill="#fff" />
+        <path d="M26 46 H86 Q85 54 82 58 H30 Q27 54 26 46 Z" fill="#19AECB" />
+        <use href="#art-horn" x="34" y="44" width="14" height="14" color="#F2B42C" />
+        <use href="#art-horn" x="49" y="44" width="14" height="14" color="#F2B42C" />
+        <use href="#art-horn" x="64" y="44" width="14" height="14" color="#F2B42C" />
+        <ellipse cx="56" cy="34" rx="32" ry="7" fill="#fff" />
+        <ellipse cx="56" cy="34" rx="28" ry="5" fill="#B5652F" />
+        <ellipse cx="50" cy="33" rx="10" ry="1.6" fill="#E3A066" />
+        <rect x="88" y="62" width="14" height="12" rx="5" fill="#D1843F" />
+        <rect x="94" y="54" width="12" height="11" rx="5" fill="#E09A50" />
+        <rect x="6" y="64" width="13" height="11" rx="5" fill="#D1843F" />
       </symbol>
       <symbol id="art-i-aul" viewBox="0 0 24 24">
         <path d="M3 20 L3.5 12 Q12 2 20.5 12 L21 20 Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" />
