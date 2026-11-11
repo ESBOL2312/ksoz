@@ -47,6 +47,7 @@ export const api = {
   home: () => data(http.get<Home>('/v1/home')),
   lesson: (limit = 12) => data(http.get<Lesson>('/v1/lesson', { params: { limit } })),
   introduce: (word_id: number) => data(http.post<IntroduceResponse>('/v1/lesson/introduce', { word_id })),
+  known: (word_id: number) => data(http.post<IntroduceResponse>('/v1/lesson/known', { word_id })),
   hint: (word_id: number, hints_used: number) =>
     data(http.post<HintResponse>('/v1/lesson/hint', { word_id, hints_used })),
   review: (body: ReviewBody) => data(http.post<ReviewResponse>('/v1/reviews', body)),

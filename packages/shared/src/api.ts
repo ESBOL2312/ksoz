@@ -119,6 +119,9 @@ export type Lesson = z.infer<typeof LessonSchema>;
 
 export const IntroduceBodySchema = z.object({ word_id: Id });
 export const IntroduceResponseSchema = z.object({ next: NextStateSchema });
+/** «Уже знаю»: тело и ответ как у introduce. */
+export const KnownBodySchema = IntroduceBodySchema;
+export const KnownResponseSchema = IntroduceResponseSchema;
 
 export const HintBodySchema = z.object({
   word_id: Id,

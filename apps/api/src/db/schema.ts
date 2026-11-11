@@ -26,7 +26,7 @@ export const levelEnum = pgEnum('level', ['A1', 'A2', 'B1', 'B2']);
 export const wordStatusEnum = pgEnum('word_status', ['draft', 'reviewed', 'published']);
 export const categoryEnum = pgEnum('item_category', ['kiim', 'uy', 'mal', 'aspap']);
 export const phaseEnum = pgEnum('srs_phase', ['learning', 'review']);
-export const sourceEnum = pgEnum('word_source', ['lesson', 'bazaar']);
+export const sourceEnum = pgEnum('word_source', ['lesson', 'bazaar', 'known']);
 export const verdictEnum = pgEnum('verdict', ['correct', 'almost', 'wrong']);
 export const ledgerReasonEnum = pgEnum('ledger_reason', ['review', 'task', 'purchase', 'prize']);
 

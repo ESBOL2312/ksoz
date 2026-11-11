@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { initialState, previewNext, quality, schedule, LEARNING_STEPS_MS } from './srs.js';
+import { initialState, knownState, previewNext, quality, schedule, KNOWN_INTERVAL_DAYS, LEARNING_STEPS_MS } from './srs.js';
 
 const now = new Date('2026-10-29T10:00:00Z');
 const MIN = 60_000;
@@ -14,6 +14,15 @@ describe('srs', () => {
 
   it('new word is due in 20 minutes', () => {
     expect(initialState(now).dueAt.getTime() - now.getTime()).toBe(20 * MIN);
+  });
+
+  it('known word goes straight to review and comes back in a month', () => {
+    const s = knownState(now);
+    expect(s.phase).toBe('review');
+    expect(s.intervalDays).toBe(KNOWN_INTERVAL_DAYS);
+    expect(s.dueAt.getTime() - now.getTime()).toBe(KNOWN_INTERVAL_DAYS * 24 * 60 * MIN);
+    // ошибка на проверке возвращает слово в обучение
+    expect(schedule(s, 'wrong', now)).toMatchObject({ phase: 'learning', step: 0, lapses: 1 });
   });
 
   it('walks through learning steps then enters review with 1 day', () => {
