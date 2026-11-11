@@ -44,6 +44,14 @@ function play() {
         Түсіндім
       </button>
       <p class="text-center text-xs font-bold text-night-300">Спросим через 20 минут</p>
+      <button
+        type="button"
+        class="w-full py-2 text-sm font-extrabold text-night-200 underline-offset-4 active:underline disabled:opacity-50"
+        :disabled="lesson.busy"
+        @click="lesson.skipKnown()"
+      >
+        Уже знаю это слово
+      </button>
     </div>
   </div>
 </template>

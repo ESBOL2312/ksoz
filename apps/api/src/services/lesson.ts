@@ -1,6 +1,7 @@
 import {
   ALTYN,
   initialState,
+  knownState,
   localDay,
   nextHint,
   type Lesson,
@@ -164,6 +165,52 @@ export async function introduceWord(db: Db, user: UserRow, wordId: number, now =
     await ensureDailyTasks(tx, user.id, day);
     await progressTask(tx, user.id, day, 'learn_5', { inc: 1 });
     return { next: { phase: s.phase, step: s.step, due_at: s.dueAt.toISOString() } };
+  });
+}
+
+/**
+ * «Уже знаю»: новое слово сразу уходит в долгие повторы (проверка через месяц)
+ * и больше не показывается как новое. Не тратит дневной лимит новых слов
+ * и не засчитывается в задание learn_5.
+ */
+export async function markKnown(db: Db, user: UserRow, wordId: number, now = new Date()) {
+  return db.transaction(async (tx) => {
+    const [existing] = await tx
+      .select()
+      .from(userWords)
+      .where(and(eq(userWords.userId, user.id), eq(userWords.wordId, wordId)));
+    if (existing) {
+      return { next: { phase: existing.phase, step: existing.step, due_at: existing.dueAt.toISOString() } };
+    }
+
+    const [word] = await tx.select({ id: words.id, status: words.status }).from(words).where(eq(words.id, wordId));
+    if (!word || word.status !== 'published') throw notFound('word_not_found');
+
+    const s = knownState(now);
+    const [row] = await tx
+      .insert(userWords)
+      .values({
+        userId: user.id,
+        wordId,
+        phase: s.phase,
+        step: s.step,
+        ease: s.ease,
+        intervalDays: s.intervalDays,
+        dueAt: s.dueAt,
+        reps: s.reps,
+        lapses: s.lapses,
+        source: 'known',
+        introducedAt: now,
+      })
+      .onConflictDoNothing()
+      .returning();
+    const uw =
+      row ??
+      (await tx
+        .select()
+        .from(userWords)
+        .where(and(eq(userWords.userId, user.id), eq(userWords.wordId, wordId))))[0]!;
+    return { next: { phase: uw.phase, step: uw.step, due_at: uw.dueAt.toISOString() } };
   });
 }
 

@@ -4,6 +4,8 @@ import {
   HomeSchema,
   IntroduceBodySchema,
   IntroduceResponseSchema,
+  KnownBodySchema,
+  KnownResponseSchema,
   LessonQuerySchema,
   LessonSchema,
   ReviewBodySchema,
@@ -16,7 +18,7 @@ import {
 } from '@ksoz/shared';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { getHome } from '../services/home.js';
-import { getLesson, hintFor, introduceWord } from '../services/lesson.js';
+import { getLesson, hintFor, introduceWord, markKnown } from '../services/lesson.js';
 import { submitReview } from '../services/reviews.js';
 import { claimTask } from '../services/tasks.js';
 import { listTopics, listWords } from '../services/words.js';
@@ -34,6 +36,12 @@ export const learningRoutes: FastifyPluginAsyncZod = async (app) => {
     '/v1/lesson/introduce',
     { schema: { body: IntroduceBodySchema, response: { 200: IntroduceResponseSchema } } },
     (req) => introduceWord(app.db, req.user.row, req.body.word_id),
+  );
+
+  app.post(
+    '/v1/lesson/known',
+    { schema: { body: KnownBodySchema, response: { 200: KnownResponseSchema } } },
+    (req) => markKnown(app.db, req.user.row, req.body.word_id),
   );
 
   app.post(

@@ -22,6 +22,8 @@ export interface LessonStats {
   /** ответы, сохранённые в очередь без ответа сервера */
   queued: number;
   introduced: number;
+  /** новые слова, отмеченные «Уже знаю» */
+  skipped: number;
   earned: number;
   bestCombo: number;
 }
@@ -32,6 +34,7 @@ const emptyStats = (): LessonStats => ({
   wrong: 0,
   queued: 0,
   introduced: 0,
+  skipped: 0,
   earned: 0,
   bestCombo: 0,
 });
@@ -113,6 +116,24 @@ export const useLessonStore = defineStore('lesson', () => {
       await api.introduce(c.word_id);
       stats.value.introduced++;
       haptics.tap();
+      next();
+    } catch (e) {
+      error.value = e instanceof ApiError ? e.code : 'network';
+    } finally {
+      busy.value = false;
+    }
+  }
+
+  /** «Уже знаю»: слово не учим, проверим через месяц. */
+  async function skipKnown() {
+    const c = card.value;
+    if (!c || c.kind !== 'new' || busy.value) return;
+    busy.value = true;
+    error.value = null;
+    try {
+      await api.known(c.word_id);
+      stats.value.skipped++;
+      haptics.select();
       next();
     } catch (e) {
       error.value = e instanceof ApiError ? e.code : 'network';
@@ -210,6 +231,7 @@ export const useLessonStore = defineStore('lesson', () => {
     start,
     next,
     introduce,
+    skipKnown,
     hint,
     check,
     reset,

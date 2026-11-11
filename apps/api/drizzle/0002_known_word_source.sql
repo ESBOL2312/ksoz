@@ -1,0 +1,1 @@
+ALTER TYPE "public"."word_source" ADD VALUE 'known';

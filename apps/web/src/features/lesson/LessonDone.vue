@@ -39,6 +39,9 @@ const router = useRouter();
 
     <div class="grid gap-2 rounded-[18px] bg-night-800 px-4 py-3 text-sm font-extrabold">
       <div class="flex justify-between"><span class="text-night-200">Новых слов</span><b class="text-white">{{ words(lesson.stats.introduced) }}</b></div>
+      <div v-if="lesson.stats.skipped > 0" class="flex justify-between">
+        <span class="text-night-200">Уже знал</span><b class="text-white">{{ words(lesson.stats.skipped) }}</b>
+      </div>
       <div class="flex items-center justify-between">
         <span class="text-night-200">Лучшее комбо</span>
         <b class="flex items-center gap-1 text-gold-400"><Art name="flame" class="size-[18px]" />×{{ lesson.stats.bestCombo }}</b>

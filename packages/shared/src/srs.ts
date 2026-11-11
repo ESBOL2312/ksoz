@@ -47,6 +47,25 @@ export function initialState(now: Date): SrsState {
   };
 }
 
+/** Интервал первой проверки слова, которое пользователь отметил как уже знакомое. */
+export const KNOWN_INTERVAL_DAYS = 30;
+
+/**
+ * «Уже знаю»: слово сразу попадает в долгие повторы и вернётся
+ * один раз через месяц для проверки. Ошибка тогда вернёт его в обучение.
+ */
+export function knownState(now: Date): SrsState {
+  return {
+    phase: 'review',
+    step: 0,
+    ease: EASE_START,
+    intervalDays: KNOWN_INTERVAL_DAYS,
+    reps: 0,
+    lapses: 0,
+    dueAt: new Date(now.getTime() + KNOWN_INTERVAL_DAYS * DAY),
+  };
+}
+
 export function schedule(state: SrsState, verdict: Verdict, now: Date, hints = 0): SrsState {
   const t = now.getTime();
   const q = quality(verdict, hints);
