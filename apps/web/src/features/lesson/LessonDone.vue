@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import Art from '@/shared/art/Art.vue';
 import Barys from '@/shared/mascot/Barys.vue';
@@ -7,6 +8,14 @@ import { useLessonStore } from '@/stores/lesson';
 
 const lesson = useLessonStore();
 const router = useRouter();
+
+/** были ли в уроке настоящие повторы (с алтыном) */
+const hadReviews = computed(() => {
+  const s = lesson.stats;
+  return s.correct + s.almost + s.wrong + s.queued > 0;
+});
+const remembered = computed(() => lesson.learned.filter((w) => w.tries != null).length);
+const triesText = (t: number | null) => (t == null ? 'повторим' : t === 1 ? 'с первого раза' : `с ${t}-й попытки`);
 </script>
 
 <template>
@@ -22,7 +31,7 @@ const router = useRouter();
       </div>
     </div>
 
-    <div class="grid grid-cols-3 gap-2.5 text-center">
+    <div v-if="hadReviews || !lesson.learned.length" class="grid grid-cols-3 gap-2.5 text-center">
       <div class="rounded-2xl bg-sky-500 py-3 text-white shadow-[0_4px_0_var(--color-sky-600)]">
         <b class="block font-display text-2xl font-black">{{ lesson.stats.correct }}</b>
         <span class="text-xs font-extrabold">верно</span>
@@ -37,11 +46,37 @@ const router = useRouter();
       </div>
     </div>
 
+    <section v-if="lesson.learned.length" class="grid gap-2 rounded-[18px] bg-night-800 px-4 py-3" aria-label="Слова на изучении">
+      <div class="flex items-baseline justify-between gap-2 text-sm font-extrabold">
+        <span class="text-white">Учишь сейчас</span>
+        <span class="text-night-200">написал {{ remembered }} из {{ lesson.learned.length }}</span>
+      </div>
+      <ul class="grid gap-1.5">
+        <li v-for="w in lesson.learned" :key="w.word_id" class="flex items-baseline justify-between gap-2">
+          <span class="min-w-0">
+            <b class="break-words font-display text-[17px] font-bold text-white">{{ w.kk }}</b>
+            <span class="text-sm font-bold text-night-200"> · {{ w.ru }}</span>
+          </span>
+          <span class="shrink-0 text-xs font-extrabold" :class="w.tries === 1 ? 'text-sky-400' : w.tries == null ? 'text-felt-300' : 'text-gold-400'">
+            {{ triesText(w.tries) }}
+          </span>
+        </li>
+      </ul>
+      <p class="text-xs font-bold text-night-300">Первый повтор через 20 минут, потом через 1, 2 и 5 часов.</p>
+    </section>
+
+    <details v-if="lesson.known.length" class="rounded-[18px] bg-night-800 px-4 py-3 text-sm font-extrabold">
+      <summary class="cursor-pointer text-night-200">Уже знал: {{ words(lesson.known.length) }}</summary>
+      <ul class="mt-2 grid gap-1">
+        <li v-for="w in lesson.known" :key="w.word_id">
+          <b class="font-display font-bold text-white">{{ w.kk }}</b><span class="font-bold text-night-200"> · {{ w.ru }}</span>
+        </li>
+      </ul>
+      <p class="mt-2 text-xs font-bold text-night-300">Проверим их через месяц.</p>
+    </details>
+
     <div class="grid gap-2 rounded-[18px] bg-night-800 px-4 py-3 text-sm font-extrabold">
       <div class="flex justify-between"><span class="text-night-200">Новых слов</span><b class="text-white">{{ words(lesson.stats.introduced) }}</b></div>
-      <div v-if="lesson.stats.skipped > 0" class="flex justify-between">
-        <span class="text-night-200">Уже знал</span><b class="text-white">{{ words(lesson.stats.skipped) }}</b>
-      </div>
       <div class="flex items-center justify-between">
         <span class="text-night-200">Лучшее комбо</span>
         <b class="flex items-center gap-1 text-gold-400"><Art name="flame" class="size-[18px]" />×{{ lesson.stats.bestCombo }}</b>

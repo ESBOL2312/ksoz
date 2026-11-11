@@ -14,7 +14,9 @@ const field = ref<HTMLInputElement | null>(null);
 const shake = ref(false);
 
 const chip = computed(() =>
-  props.card.phase === 'learning'
+  lesson.round === 'practice'
+    ? 'Закрепление'
+    : props.card.phase === 'learning'
     ? `Повтор ${props.card.step + 1} из 4 · ${STEP_LABELS[props.card.step] ?? ''}`
     : 'Повторение',
 );

@@ -1,4 +1,4 @@
-import type { LessonCard, ReviewResponse } from '@ksoz/shared';
+import { checkAnswer, LEARNING_STEPS_MS, nextHint, type LessonCard, type ReviewResponse } from '@ksoz/shared';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { api } from '@/api/endpoints';
@@ -11,6 +11,7 @@ export type LessonStage =
   | 'loading'
   | 'empty' // нечего повторять и новых слов на сегодня нет
   | 'card' // карточка: новое слово или ввод ответа
+  | 'practice-intro' // переход к закреплению новых слов
   | 'result' // экран награды после ответа
   | 'done' // итог урока
   | 'error';
@@ -26,6 +27,32 @@ export interface LessonStats {
   skipped: number;
   earned: number;
   bestCombo: number;
+}
+
+/** Раунд урока: основные карточки или закрепление только что изученных слов. */
+export type LessonRound = 'main' | 'practice';
+
+/** Новое слово, которое пользователь взял в изучение в этом уроке. */
+export interface LearnedWord {
+  word_id: number;
+  kk: string;
+  ru: string;
+  /** когда слово вернётся на первый повтор */
+  due_at: string;
+  /** с какой попытки написал в закреплении; null — ещё не написал */
+  tries: number | null;
+}
+
+/** Сколько раз максимум слово вернётся в закрепление после ошибки. */
+const PRACTICE_RETRIES = 2;
+
+function shuffle<T>(list: T[]): T[] {
+  const a = [...list];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j]!, a[i]!];
+  }
+  return a;
 }
 
 const emptyStats = (): LessonStats => ({
@@ -58,6 +85,13 @@ export const useLessonStore = defineStore('lesson', () => {
   const combo = ref(0);
   const balance = ref<number | null>(null);
   const stats = ref<LessonStats>(emptyStats());
+  const round = ref<LessonRound>('main');
+  /** новые слова, взятые в изучение в этом уроке (по порядку показа) */
+  const learned = ref<LearnedWord[]>([]);
+  /** новые слова, отмеченные «Уже знаю» в этом уроке */
+  const known = ref<{ word_id: number; kk: string; ru: string }[]>([]);
+  /** попытки по словам в закреплении */
+  const tries = new Map<number, number>();
 
   const card = computed<LessonCard | null>(() => cards.value[index.value] ?? null);
   const total = computed(() => cards.value.length);
@@ -73,6 +107,10 @@ export const useLessonStore = defineStore('lesson', () => {
     balance.value = null;
     result.value = null;
     index.value = 0;
+    round.value = 'main';
+    learned.value = [];
+    known.value = [];
+    tries.clear();
     try {
       await outbox.flush();
       const lesson = await api.lesson(limit);
@@ -98,7 +136,16 @@ export const useLessonStore = defineStore('lesson', () => {
   }
 
   function next() {
+    // ошибка в закреплении: слово вернётся в конец раунда
+    const c = card.value;
+    if (round.value === 'practice' && c && result.value && result.value.verdict !== 'correct') {
+      if ((tries.get(c.word_id) ?? 0) <= PRACTICE_RETRIES) cards.value.push(c);
+    }
     if (index.value + 1 >= cards.value.length) {
+      if (round.value === 'main' && learned.value.length) {
+        startPractice();
+        return;
+      }
       index.value = cards.value.length;
       stage.value = 'done';
       return;
@@ -107,14 +154,47 @@ export const useLessonStore = defineStore('lesson', () => {
     showCard();
   }
 
+  /**
+   * Закрепление: сразу после знакомства пользователь пишет каждое новое слово
+   * по-казахски. Это тренировка без алтына и без изменений SRS: слово
+   * по-прежнему вернётся на первый повтор через 20 минут. Слово новой карточки
+   * уже известно клиенту, поэтому ответ проверяется здесь же.
+   */
+  function startPractice() {
+    const byId = new Map(cards.value.map((c) => [c.word_id, c]));
+    cards.value = shuffle(
+      learned.value
+        .map((w) => byId.get(w.word_id))
+        .filter((c): c is LessonCard => !!c)
+        .map((c) => ({ ...c, kind: 'review' as const, phase: 'learning' as const, step: 0 })),
+    );
+    round.value = 'practice';
+    index.value = 0;
+    result.value = null;
+    stage.value = 'practice-intro';
+  }
+
+  function beginPractice() {
+    if (stage.value === 'practice-intro') showCard();
+  }
+
+  /** Пропустить закрепление и сразу перейти к итогу. */
+  function skipPractice() {
+    index.value = cards.value.length;
+    stage.value = 'done';
+  }
+
   /** Новое слово показано целиком → первый повтор через 20 минут. */
   async function introduce() {
     const c = card.value;
     if (!c || busy.value) return;
     busy.value = true;
     try {
-      await api.introduce(c.word_id);
+      const res = await api.introduce(c.word_id);
       stats.value.introduced++;
+      if (c.kk) {
+        learned.value.push({ word_id: c.word_id, kk: c.kk, ru: c.ru, due_at: res.next.due_at, tries: null });
+      }
       haptics.tap();
       next();
     } catch (e) {
@@ -133,6 +213,7 @@ export const useLessonStore = defineStore('lesson', () => {
     try {
       await api.known(c.word_id);
       stats.value.skipped++;
+      if (c.kk) known.value.push({ word_id: c.word_id, kk: c.kk, ru: c.ru });
       haptics.select();
       next();
     } catch (e) {
@@ -146,6 +227,12 @@ export const useLessonStore = defineStore('lesson', () => {
   async function hint() {
     const c = card.value;
     if (!c || busy.value) return;
+    if (round.value === 'practice' && c.kk) {
+      input.value = nextHint(c.kk, hints.value);
+      hints.value++;
+      haptics.select();
+      return;
+    }
     busy.value = true;
     try {
       const res = await api.hint(c.word_id, hints.value);
@@ -164,6 +251,10 @@ export const useLessonStore = defineStore('lesson', () => {
     const c = card.value;
     const text = input.value.trim();
     if (!c || !text || busy.value) return;
+    if (round.value === 'practice') {
+      checkPractice(c, text);
+      return;
+    }
     busy.value = true;
     error.value = null;
     lastInput.value = text;
@@ -204,11 +295,47 @@ export const useLessonStore = defineStore('lesson', () => {
     }
   }
 
+  /** Ответ в закреплении: проверка на клиенте, без алтына и без SRS. */
+  function checkPractice(c: LessonCard, text: string) {
+    const kk = c.kk ?? '';
+    const w = learned.value.find((l) => l.word_id === c.word_id);
+    const attempt = (tries.get(c.word_id) ?? 0) + 1;
+    tries.set(c.word_id, attempt);
+    error.value = null;
+    lastInput.value = text;
+    const res = checkAnswer(text, kk);
+    if (res.verdict === 'correct') {
+      if (w && w.tries == null) w.tries = attempt;
+      haptics.success();
+    } else if (res.verdict === 'almost') {
+      haptics.warning();
+    } else {
+      haptics.error();
+    }
+    result.value = {
+      verdict: res.verdict,
+      answer: kk,
+      fix: res.fix,
+      altyn: { base: 0, combo: 0, earned: 0, balance: balance.value ?? 0 },
+      next: {
+        phase: 'learning',
+        step: 0,
+        due_at: w?.due_at ?? new Date(Date.now() + LEARNING_STEPS_MS[0]).toISOString(),
+      },
+      examples: c.examples,
+    };
+    stage.value = 'result';
+  }
+
   function reset() {
     stage.value = 'idle';
     cards.value = [];
     index.value = 0;
     result.value = null;
+    round.value = 'main';
+    learned.value = [];
+    known.value = [];
+    tries.clear();
   }
 
   return {
@@ -225,11 +352,16 @@ export const useLessonStore = defineStore('lesson', () => {
     combo,
     balance,
     stats,
+    round,
+    learned,
+    known,
     card,
     total,
     progress,
     start,
     next,
+    beginPractice,
+    skipPractice,
     introduce,
     skipKnown,
     hint,
