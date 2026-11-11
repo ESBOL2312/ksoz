@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { LessonCard } from '@ksoz/shared';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import Art from '@/shared/art/Art.vue';
 import { plural, STEP_LABELS } from '@/shared/format';
 import { haptics } from '@/telegram';
@@ -26,7 +26,6 @@ const errorText = computed(() =>
   lesson.error === 'network' ? 'Нет связи. Проверь сеть и попробуй ещё раз.' : lesson.error ? 'Не получилось проверить. Попробуй ещё раз.' : '',
 );
 
-onMounted(() => field.value?.focus({ preventScroll: true }));
 watch(
   () => lesson.error,
   (e) => {
@@ -38,9 +37,12 @@ watch(
 
 async function put(text: string, del = false) {
   const el = field.value;
+  // Фокус только по тапу пользователя: если поле не в фокусе, кнопки букв
+  // дописывают в конец и не открывают системную клавиатуру.
+  const focused = !!el && document.activeElement === el;
   const v = lesson.input;
-  const a = el?.selectionStart ?? v.length;
-  const b = el?.selectionEnd ?? v.length;
+  const a = focused ? (el.selectionStart ?? v.length) : v.length;
+  const b = focused ? (el.selectionEnd ?? v.length) : v.length;
   let pos: number;
   if (del) {
     const from = a === b ? Math.max(0, a - 1) : a;
@@ -51,9 +53,9 @@ async function put(text: string, del = false) {
     pos = a + text.length;
   }
   haptics.select();
+  if (!focused) return;
   await nextTick();
-  el?.focus({ preventScroll: true });
-  el?.setSelectionRange(pos, pos);
+  el.setSelectionRange(pos, pos);
 }
 
 const canCheck = computed(() => !!lesson.input.trim() && !lesson.busy);
