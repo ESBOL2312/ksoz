@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 import { invalidateAfterLesson, setBalance, useHome } from '@/api';
 import Art from '@/shared/art/Art.vue';
 import Barys from '@/shared/mascot/Barys.vue';
+import { words } from '@/shared/format';
 import { getWebApp, supports, useBackButton } from '@/telegram';
 import { useLessonStore } from '@/stores/lesson';
 import IntroCard from './IntroCard.vue';
@@ -68,6 +69,21 @@ watch(
       <IntroCard v-if="lesson.card.kind === 'new'" :key="lesson.index" :card="lesson.card" />
       <QuizCard v-else :key="lesson.index" :card="lesson.card" />
     </template>
+
+    <div v-else-if="lesson.stage === 'practice-intro'" class="flex flex-1 flex-col">
+      <div class="grid flex-1 content-center justify-items-center gap-3 text-center">
+        <Barys mood="think" class="w-36" />
+        <h1 class="font-display text-2xl font-black text-gold-400">Теперь проверим</h1>
+        <p class="max-w-[18rem] text-sm font-bold text-night-200">
+          Ты взял в изучение {{ words(lesson.learned.length) }}. Напиши каждое по-казахски, так они лучше запомнятся.
+          Алтын за тренировку не начисляется.
+        </p>
+      </div>
+      <div class="grid gap-2.5">
+        <button type="button" class="chunky chunky-gold w-full px-4 py-[15px] text-[15px]" @click="lesson.beginPractice()">Проверить себя</button>
+        <button type="button" class="w-full py-2 text-sm font-extrabold text-night-200" @click="lesson.skipPractice()">Пропустить</button>
+      </div>
+    </div>
 
     <ResultPanel v-else-if="lesson.stage === 'result'" />
     <LessonDone v-else-if="lesson.stage === 'done'" />

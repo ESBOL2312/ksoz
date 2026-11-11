@@ -81,6 +81,9 @@ const MOODS = { correct: 'happy', almost: 'think', wrong: 'sad' } as const;
         <ExampleLine v-for="(e, i) in res.examples" :key="i" :kk="e.kk" :ru="e.ru" :word="res.answer" />
       </div>
 
+      <p v-if="lesson.round === 'practice' && res.verdict !== 'correct'" class="text-center text-xs font-extrabold text-night-200">
+        Это тренировка, алтын не снимается. Слово ещё раз попадётся в конце закрепления.
+      </p>
       <SrsLine :next="res.next" />
 
       <button type="button" class="chunky chunky-gold mt-auto w-full px-4 py-[15px] text-[15px]" @click="lesson.next()">Дальше</button>

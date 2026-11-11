@@ -43,7 +43,7 @@ function play() {
       <button type="button" class="chunky chunky-gold w-full px-4 py-[15px] text-[15px]" :disabled="lesson.busy" @click="lesson.introduce()">
         Түсіндім
       </button>
-      <p class="text-center text-xs font-bold text-night-300">Спросим через 20 минут</p>
+      <p class="text-center text-xs font-bold text-night-300">Проверим в конце урока, потом через 20 минут</p>
       <button
         type="button"
         class="w-full py-2 text-sm font-extrabold text-night-200 underline-offset-4 active:underline disabled:opacity-50"
