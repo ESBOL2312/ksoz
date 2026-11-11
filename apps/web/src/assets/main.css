@@ -77,7 +77,8 @@
   --ui-text-toned: var(--color-night-200);
   --ui-text-highlighted: #fff;
   --ui-border: var(--color-night-700);
-  --ui-radius: 0.75rem;
+  /* база для rounded-*: в Nuxt UI rounded-3xl = 6 × --ui-radius (0.25rem → 24px) */
+  --ui-radius: 0.25rem;
 
   /* отступы безопасной зоны Telegram (заполняются в telegram/webapp.ts) */
   --tg-safe-top: env(safe-area-inset-top, 0px);
