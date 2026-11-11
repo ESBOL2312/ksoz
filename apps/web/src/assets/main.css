@@ -64,6 +64,9 @@
   --color-ink: #1b1736;
   --color-ink-2: #5a5478;
   --color-grass: #7daa45;
+
+  /* карточки (rounded-3xl): 16px вместо 6 × --ui-radius из Nuxt UI */
+  --radius-3xl: 1rem;
 }
 
 :root {
@@ -77,8 +80,8 @@
   --ui-text-toned: var(--color-night-200);
   --ui-text-highlighted: #fff;
   --ui-border: var(--color-night-700);
-  /* база для rounded-*: в Nuxt UI rounded-3xl = 6 × --ui-radius (0.25rem → 24px) */
-  --ui-radius: 0.25rem;
+  /* база для rounded-*: в Nuxt UI xl = 3×, 2xl = 4× --ui-radius → 9px / 12px */
+  --ui-radius: 0.1875rem;
 
   /* отступы безопасной зоны Telegram (заполняются в telegram/webapp.ts) */
   --tg-safe-top: env(safe-area-inset-top, 0px);
