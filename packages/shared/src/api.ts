@@ -177,6 +177,36 @@ export const WordListItemSchema = z.object({
 });
 export const WordsResponseSchema = z.object({ words: z.array(WordListItemSchema) });
 
+// --- мои слова: изучаемые слова с прогрессом ---
+export const WordGroupSchema = z.enum(['due', 'learning', 'review']);
+export const MyWordSchema = z.object({
+  word_id: Id,
+  kk: z.string(),
+  ru: z.string(),
+  image_url: z.string().nullable(),
+  group: WordGroupSchema,
+  phase: PhaseSchema,
+  step: z.number().int(),
+  interval_days: z.number().int(),
+  due_at: IsoDate,
+  reps: z.number().int(),
+  lapses: z.number().int(),
+  introduced_at: IsoDate,
+  last_reviewed_at: IsoDate.nullable(),
+  /** все ответы по слову */
+  answers: z.object({ correct: z.number().int(), almost: z.number().int(), wrong: z.number().int() }),
+  /** последние ответы, от старых к новым (до 8) */
+  recent: z.array(VerdictSchema),
+  examples: z.array(ExampleSchema),
+});
+export type MyWord = z.infer<typeof MyWordSchema>;
+export const MyWordsResponseSchema = z.object({
+  words: z.array(MyWordSchema),
+  /** слова с интервалом от 21 дня: в список не входят */
+  mastered: z.number().int(),
+});
+export type MyWords = z.infer<typeof MyWordsResponseSchema>;
+
 export const TopicSchema = z.object({
   id: Id,
   slug: z.string(),

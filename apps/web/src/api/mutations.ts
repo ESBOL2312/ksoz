@@ -15,6 +15,7 @@ export function invalidateAfterLesson(qc: QueryClient): void {
   void qc.invalidateQueries({ queryKey: qk.me });
   void qc.invalidateQueries({ queryKey: qk.baige() });
   void qc.invalidateQueries({ queryKey: ['words'] });
+  void qc.invalidateQueries({ queryKey: qk.myWords });
 }
 
 export function usePatchMe() {

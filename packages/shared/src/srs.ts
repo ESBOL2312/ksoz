@@ -109,3 +109,19 @@ export function previewNext(state: SrsState, verdict: Verdict, now: Date, hints 
   const next = schedule(state, verdict, now, hints);
   return { next, inMs: next.dueAt.getTime() - now.getTime() };
 }
+
+/** Слово считается выученным, когда интервал долгих повторов дорос до трёх недель. */
+export const MASTERED_INTERVAL_DAYS = 21;
+
+/**
+ * Группа слова в списке «Мои слова»:
+ * due — пора повторить, learning — короткие повторы, review — закрепление (интервал < 21 дня),
+ * mastered — выучено.
+ */
+export type WordGroup = 'due' | 'learning' | 'review' | 'mastered';
+
+export function wordGroup(s: { phase: Phase; intervalDays: number; dueAt: Date }, now: Date): WordGroup {
+  if (s.phase === 'review' && s.intervalDays >= MASTERED_INTERVAL_DAYS) return 'mastered';
+  if (s.dueAt.getTime() <= now.getTime()) return 'due';
+  return s.phase === 'learning' ? 'learning' : 'review';
+}

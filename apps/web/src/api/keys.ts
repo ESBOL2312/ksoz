@@ -8,6 +8,7 @@ export const qk = {
   bazaar: ['bazaar'] as const,
   baige: (scope?: BaigeScope) => (scope ? (['baige', scope] as const) : (['baige'] as const)),
   words: (level?: string, topic?: string) => ['words', level ?? null, topic ?? null] as const,
+  myWords: ['my-words'] as const,
   topics: ['topics'] as const,
   cities: ['cities'] as const,
   invite: ['invite'] as const,

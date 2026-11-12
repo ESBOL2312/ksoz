@@ -8,6 +8,7 @@ import {
   KnownResponseSchema,
   LessonQuerySchema,
   LessonSchema,
+  MyWordsResponseSchema,
   ReviewBodySchema,
   ReviewResponseSchema,
   TaskClaimParamsSchema,
@@ -21,7 +22,7 @@ import { getHome } from '../services/home.js';
 import { getLesson, hintFor, introduceWord, markKnown } from '../services/lesson.js';
 import { submitReview } from '../services/reviews.js';
 import { claimTask } from '../services/tasks.js';
-import { listTopics, listWords } from '../services/words.js';
+import { listMyWords, listTopics, listWords } from '../services/words.js';
 
 const limit60 = { config: { rateLimit: { max: 60, timeWindow: '1 minute' } } };
 
@@ -58,6 +59,10 @@ export const learningRoutes: FastifyPluginAsyncZod = async (app) => {
 
   app.get('/v1/words', { schema: { querystring: WordsQuerySchema, response: { 200: WordsResponseSchema } } }, (req) =>
     listWords(app.db, req.user.id, req.query),
+  );
+
+  app.get('/v1/my-words', { schema: { response: { 200: MyWordsResponseSchema } } }, (req) =>
+    listMyWords(app.db, req.user.id),
   );
 
   app.get('/v1/topics', { schema: { response: { 200: TopicsResponseSchema } } }, () => listTopics(app.db));

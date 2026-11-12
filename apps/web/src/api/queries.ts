@@ -8,6 +8,8 @@ const HOUR = 60 * 60_000;
 export const useMe = () => useQuery({ queryKey: qk.me, queryFn: api.me });
 export const useHome = () => useQuery({ queryKey: qk.home, queryFn: api.home });
 export const useBazaar = () => useQuery({ queryKey: qk.bazaar, queryFn: api.bazaar });
+/** Слова в процессе изучения: после урока сбрасывается в invalidateAfterLesson. */
+export const useMyWords = () => useQuery({ queryKey: qk.myWords, queryFn: api.myWords });
 export const useTopics = () => useQuery({ queryKey: qk.topics, queryFn: api.topics, staleTime: HOUR });
 export const useCities = () => useQuery({ queryKey: qk.cities, queryFn: api.cities, staleTime: HOUR });
 export const useInvite = () => useQuery({ queryKey: qk.invite, queryFn: api.invite, staleTime: Infinity });
