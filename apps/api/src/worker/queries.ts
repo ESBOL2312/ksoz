@@ -115,3 +115,11 @@ export async function lastSentAt(db: Db, userId: number, kind: ReminderKind): Pr
   `);
   return toDate(res.rows[0]?.t);
 }
+
+/** Время последнего напоминания любого вида (не больше одного сообщения в окне). */
+export async function lastAnySentAt(db: Db, userId: number): Promise<Date | null> {
+  const res = await db.execute<{ t: Date | string | null }>(sql`
+    select max(sent_at) as t from notification_log where user_id = ${userId}
+  `);
+  return toDate(res.rows[0]?.t);
+}

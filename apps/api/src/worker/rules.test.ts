@@ -43,11 +43,11 @@ describe('quiet hours', () => {
     expect(isQuietHour(now, 'Etc/GMT-5')).toBe(false);
     expect(isQuietHour(now, 'Etc/GMT+5')).toBe(true);
   });
-  it('short review is not sent in quiet hours, sent right after', () => {
+  it('short review is not sent in quiet hours, sent in the morning slot', () => {
     const u = user({ dueLearning: 2 });
     expect(kinds(at('2026-10-29', '08:59'), u)).toEqual([]);
     expect(kinds(at('2026-10-29', '09:00'), u)).toEqual(['short']);
-    expect(kinds(at('2026-10-29', '21:59'), u)).toEqual(['short']);
+    expect(kinds(at('2026-10-29', '21:59'), u)).toEqual([]);
     expect(kinds(at('2026-10-29', '22:00'), u)).toEqual([]);
   });
 });
@@ -58,15 +58,33 @@ describe('short review', () => {
     expect(kinds(now, user({ dueLearning: 0, dueTotal: 3 }))).toEqual([]);
     expect(kinds(now, user({ dueLearning: 1, notify: { short: false } }))).toEqual([]);
   });
-  it('at most once per hour', () => {
-    const now = at('2026-10-29', '14:00');
-    const u = (mins: number) => user({ dueLearning: 1, lastSent: { short: new Date(now.getTime() - mins * 60_000) } });
-    expect(kinds(now, u(59))).toEqual([]);
-    expect(kinds(now, u(60))).toEqual(['short']);
+  it('only in the three slots: 9, 14 and 20 local', () => {
+    const u = user({ dueLearning: 1 });
+    for (const h of ['09:10', '14:00', '14:59', '20:30']) expect(kinds(at('2026-10-29', h), u)).toEqual(['short']);
+    for (const h of ['10:00', '11:30', '13:59', '15:00', '17:45', '19:59', '21:00']) {
+      expect(kinds(at('2026-10-29', h), u)).toEqual([]);
+    }
   });
-  it('not right after another notification of any kind', () => {
-    const now = at('2026-10-29', '14:00');
-    expect(kinds(now, user({ dueLearning: 1, lastAnySent: new Date(now.getTime() - 10 * 60_000) }))).toEqual([]);
+  it('once per slot, whatever was sent there', () => {
+    const now = at('2026-10-29', '14:40');
+    const short = (t: Date) => user({ dueLearning: 1, lastSent: { short: t }, lastAnySent: t });
+    expect(kinds(now, short(at('2026-10-29', '14:00')))).toEqual([]);
+    expect(kinds(now, short(at('2026-10-29', '09:00')))).toEqual(['short']);
+    expect(kinds(now, short(at('2026-10-28', '14:00')))).toEqual(['short']); // вчера в то же окно
+    const daily = at('2026-10-29', '09:00');
+    expect(kinds(at('2026-10-29', '09:30'), user({ dueLearning: 1, dueTotal: 1, lastSent: { daily }, lastAnySent: daily }))).toEqual([]);
+  });
+  it('a day never gets more than three messages', () => {
+    let u = user({ dueLearning: 3, dueTotal: 5, streakCurrent: 2, lastActiveDay: '2026-10-28' });
+    let count = 0;
+    for (let m = 0; m < 24 * 60; m++) {
+      const now = new Date(at('2026-10-29', '00:00').getTime() + m * 60_000);
+      const r = pickReminder(now, u);
+      if (!r) continue;
+      count++;
+      u = { ...u, lastSent: { ...u.lastSent, [r.kind]: now }, lastAnySent: now };
+    }
+    expect(count).toBe(3);
   });
 });
 
@@ -124,19 +142,20 @@ describe('streak at risk', () => {
 });
 
 describe('baige', () => {
-  const sunday = at('2026-11-01', '21:10');
+  const sunday = at('2026-11-01', '20:10');
   const res = { score: 120, rank: 3, total: 40 };
-  it('Sunday 21:00-22:00 local with a result', () => {
+  it('Sunday 20:00-21:00 local with a result', () => {
     expect(kinds(sunday, user({ baige: res }))).toEqual(['baige']);
-    expect(kinds(at('2026-11-01', '20:59'), user({ baige: res }))).toEqual([]);
-    expect(kinds(at('2026-10-31', '21:10'), user({ baige: res }))).toEqual([]); // суббота
+    expect(kinds(at('2026-11-01', '19:59'), user({ baige: res }))).toEqual([]);
+    expect(kinds(at('2026-11-01', '21:00'), user({ baige: res }))).toEqual([]);
+    expect(kinds(at('2026-10-31', '20:10'), user({ baige: res }))).toEqual([]); // суббота
     expect(kinds(sunday, user({ baige: null }))).toEqual([]);
     expect(kinds(sunday, user({ baige: res, notify: { baige: false } }))).toEqual([]);
   });
   it('once per week', () => {
-    const u = user({ baige: res, lastSent: { baige: at('2026-11-01', '21:00') } });
-    expect(kinds(at('2026-11-01', '21:30'), u)).toEqual([]);
-    const prev = user({ baige: res, lastSent: { baige: at('2026-10-25', '21:00') } });
+    const u = user({ baige: res, lastSent: { baige: at('2026-11-01', '20:00') } });
+    expect(kinds(at('2026-11-01', '20:30'), u)).toEqual([]);
+    const prev = user({ baige: res, lastSent: { baige: at('2026-10-25', '20:00') } });
     expect(kinds(sunday, prev)).toEqual(['baige']);
   });
 });

@@ -9,10 +9,15 @@ export const KIND_PRIORITY: readonly ReminderKind[] = ['streak', 'daily', 'baige
 /** Тихие часы: с 22:00 до 9:00 местного времени. */
 export const QUIET_FROM = 22;
 export const QUIET_TO = 9;
-export const DAILY_HOUR = 9; // 9:00–10:00 местного
-export const STREAK_HOUR = 20; // 20:00–21:00 местного
-export const BAIGE_HOUR = 21; // воскресенье 21:00–22:00 местного: неделя закрыта, итоги отправляем
-export const SHORT_MIN_GAP_MS = 60 * 60 * 1000;
+
+/**
+ * Окна отправки (местный час): утро, день, вечер. Вне этих часов бот молчит,
+ * в каждом окне уходит не больше одного сообщения, значит — не больше трёх в день.
+ */
+export const SLOT_HOURS: readonly number[] = [9, 14, 20];
+export const DAILY_HOUR = 9; // утреннее окно, 9:00–10:00 местного
+export const STREAK_HOUR = 20; // вечернее окно, 20:00–21:00 местного
+export const BAIGE_HOUR = 20; // воскресенье, вечернее окно: итоги недели
 
 export interface BaigeResult {
   score: number;
@@ -60,10 +65,21 @@ export function isBaigeWindow(now: Date, timeZone: string): boolean {
   return isLocalSunday(now, timeZone) && localTime(now, timeZone).hour === BAIGE_HOUR;
 }
 
+/** Текущее окно отправки (местный час из SLOT_HOURS) или null. */
+export function slotHour(now: Date, timeZone: string): number | null {
+  const { hour } = localTime(now, timeZone);
+  return SLOT_HOURS.includes(hour) ? hour : null;
+}
+
+/** Попадают ли два момента в одно окно: тот же местный день и тот же час. */
+export function sameSlot(a: Date, b: Date, timeZone: string): boolean {
+  return localDay(a, timeZone) === localDay(b, timeZone) && localTime(a, timeZone).hour === localTime(b, timeZone).hour;
+}
+
 export function periodKey(kind: ReminderKind, now: Date, timeZone: string): string {
   switch (kind) {
     case 'short':
-      return `h${Math.floor(now.getTime() / SHORT_MIN_GAP_MS)}`;
+      return `${localDay(now, timeZone)}@${localTime(now, timeZone).hour}`;
     case 'baige':
       return isoWeek(now, timeZone);
     default:
@@ -81,7 +97,9 @@ export function dueReminders(now: Date, u: UserSnapshot): DueReminder[] {
   const tz = u.timezone;
   const notify = readNotify(u.notify);
   const { hour } = localTime(now, tz);
-  if (isQuietHour(now, tz)) return [];
+  if (isQuietHour(now, tz) || slotHour(now, tz) === null) return [];
+  // в этом окне уже что-то отправили
+  if (u.lastAnySent && sameSlot(u.lastAnySent, now, tz)) return [];
   const today = localDay(now, tz);
   const out: DueReminder[] = [];
   const add = (kind: ReminderKind) => out.push({ kind, period: periodKey(kind, now, tz) });
@@ -107,12 +125,7 @@ export function dueReminders(now: Date, u: UserSnapshot): DueReminder[] {
   ) {
     add('baige');
   }
-  if (
-    notify.short &&
-    u.dueLearning > 0 &&
-    (!u.lastSent.short || now.getTime() - u.lastSent.short.getTime() >= SHORT_MIN_GAP_MS) &&
-    (!u.lastAnySent || now.getTime() - u.lastAnySent.getTime() >= SHORT_MIN_GAP_MS)
-  ) {
+  if (notify.short && u.dueLearning > 0) {
     add('short');
   }
   return out;
