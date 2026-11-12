@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useCities, useHome, useMe, usePatchMe, type PatchMeBody } from '@/api';
 import Barys from '@/shared/mascot/Barys.vue';
 import { wearFrom } from '@/shared/mascot/mascot';
+import { days } from '@/shared/format';
 import { LEVELS, type Level, type Notify } from '@ksoz/shared';
 import { haptics, useBackButton } from '@/telegram';
 
@@ -26,16 +27,16 @@ const cityItems = computed(() => [
 const cityValue = computed(() => (me.data.value?.city_id == null ? NONE : String(me.data.value.city_id)));
 
 const LEVEL_HINTS: Record<Level, string> = {
-  A1: 'Начинаю',
-  A2: 'Базовый',
-  B1: 'Средний',
-  B2: 'Свободный',
+  A1: 'начинаю с нуля',
+  A2: 'знаю базовые слова',
+  B1: 'понимаю простые тексты',
+  B2: 'говорю свободно',
 };
 
-const REMINDERS: { key: keyof Notify; title: string }[] = [
-  { key: 'short', title: 'Короткие повторы (20 мин – 5 ч)' },
-  { key: 'daily', title: 'Повторы дня, утром' },
-  { key: 'streak', title: 'Серия сгорает, в 20:00' },
+const REMINDERS: { key: keyof Notify; title: string; hint?: string }[] = [
+  { key: 'short', title: 'Короткие повторы', hint: 'Через 20 минут – 5 часов' },
+  { key: 'daily', title: 'Повторы дня', hint: 'Утром' },
+  { key: 'streak', title: 'Серия сгорает', hint: 'В 20:00' },
   { key: 'baige', title: 'Итоги бәйге' },
 ];
 
@@ -63,86 +64,91 @@ function setNotify(key: keyof Notify, value: boolean) {
 </script>
 
 <template>
-  <section class="px-3.5 pt-3 pb-8">
-    <button
-      v-if="!hasTgBack"
-      class="mb-2 inline-flex items-center gap-1 rounded-full bg-night-800 py-1.5 pr-3.5 pl-2.5 text-[13px] font-extrabold text-night-100"
-      @click="goBack"
-    >
-      <span aria-hidden="true">‹</span> В аул
-    </button>
+  <section class="pb-8">
+    <div class="grid h-11 grid-cols-[1fr_auto_1fr] items-center px-2">
+      <button v-if="!hasTgBack" type="button" class="btn-plain justify-self-start px-2 text-body" @click="goBack">
+        <svg width="12" height="20" viewBox="0 0 12 20" class="mr-1" aria-hidden="true">
+          <path d="M10 2L2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        Ауыл
+      </button>
+      <span v-else />
+      <h1 class="text-headline">Профиль</h1>
+      <span />
+    </div>
 
-    <div v-if="me.isPending.value" class="grid gap-3" aria-busy="true">
-      <div class="h-40 animate-pulse rounded-[20px] bg-night-800" />
-      <div class="h-32 animate-pulse rounded-[20px] bg-night-800" />
+    <div v-if="me.isPending.value" class="mx-4 mt-2 grid gap-3" aria-busy="true">
+      <div class="h-28 animate-pulse rounded-card bg-surface" />
+      <div class="h-40 animate-pulse rounded-card bg-surface" />
     </div>
 
     <template v-else-if="me.data.value">
-      <div class="flex items-end gap-3 rounded-[22px] px-2 pt-3" style="background: linear-gradient(160deg, #3fb6dc, #1f7fae); box-shadow: 0 5px 0 #165767">
-        <Barys mood="wave" v-bind="wear" class="-mb-1 w-[110px] shrink-0" />
-        <div class="grid gap-1 pb-3">
-          <h1 class="font-display text-xl font-black break-words text-white [text-shadow:0_2px_0_#165767]">{{ me.data.value.first_name }}</h1>
-          <span class="text-[13px] font-bold text-sky-50">Уровень {{ me.data.value.level }} · серия {{ me.data.value.streak_current }}, рекорд {{ me.data.value.streak_best }}</span>
+      <div class="mx-4 mt-2 flex h-28 items-end gap-2 overflow-hidden rounded-card bg-surface pr-4">
+        <Barys mood="wave" v-bind="wear" class="-mb-3.5 w-[110px] shrink-0" />
+        <div class="grid gap-0.5 self-center">
+          <span class="text-title2 break-words">{{ me.data.value.first_name }}</span>
+          <span class="text-footnote text-label-2">
+            Уровень {{ me.data.value.level }} · серия {{ days(me.data.value.streak_current) }}, рекорд {{ me.data.value.streak_best }}
+          </span>
         </div>
       </div>
 
-      <h2 class="mt-4 mb-2 font-display text-[13px] font-bold text-gold-400">Мой уровень</h2>
-      <div class="grid grid-cols-4 gap-2" role="radiogroup" aria-label="Уровень">
+      <h2 class="mx-8 mt-6 mb-1.5 text-footnote font-medium text-label-3">Мой уровень</h2>
+      <div class="segmented mx-4" role="radiogroup" aria-label="Уровень">
         <button
           v-for="l in LEVELS"
           :key="l"
+          type="button"
           role="radio"
+          class="segment text-subhead"
           :aria-checked="me.data.value.level === l"
           :disabled="patch.isPending.value"
-          class="grid justify-items-center gap-0.5 rounded-2xl px-1 py-2.5 transition-colors disabled:opacity-60"
-          :class="
-            me.data.value.level === l
-              ? 'bg-gold-400 text-ink shadow-[0_4px_0_var(--color-gold-600)]'
-              : 'bg-night-800 text-night-100 shadow-[0_4px_0_#0e1838]'
-          "
           @click="setLevel(l)"
         >
-          <span class="font-display text-lg font-black">{{ l }}</span>
-          <span class="text-[10px] font-extrabold opacity-80">{{ LEVEL_HINTS[l] }}</span>
+          {{ l }}
         </button>
       </div>
+      <p class="mx-8 mt-1.5 text-footnote text-label-3">{{ me.data.value.level }}, {{ LEVEL_HINTS[me.data.value.level] }}. Новые слова подбираем под этот уровень.</p>
 
-      <h2 class="mt-5 mb-2 font-display text-[13px] font-bold text-gold-400">Город</h2>
-      <div class="card-milk rounded-[18px] p-3">
+      <h2 class="mx-8 mt-6 mb-1.5 text-footnote font-medium text-label-3">Город</h2>
+      <div class="mx-4 rounded-card bg-surface p-2">
         <USelect
           :model-value="cityValue"
           :items="cityItems"
           :loading="cities.isPending.value"
           :disabled="patch.isPending.value"
           size="xl"
-          class="w-full"
+          variant="none"
+          class="w-full text-body"
           aria-label="Город"
           @update:model-value="setCity(String($event))"
         />
-        <p class="mt-2 text-xs font-bold text-ink-2">Нужен для городского рейтинга в бәйге.</p>
       </div>
+      <p class="mx-8 mt-1.5 text-footnote text-label-3">Нужен для городского рейтинга в бәйге.</p>
 
-      <h2 class="mt-5 mb-2 font-display text-[13px] font-bold text-gold-400">Напоминания</h2>
-      <div class="card-milk grid divide-y divide-milk-2 rounded-[18px] px-4">
-        <div v-for="r in REMINDERS" :key="r.key" class="flex items-center justify-between gap-3 py-3">
-          <span class="text-sm font-extrabold">{{ r.title }}</span>
+      <h2 class="mx-8 mt-6 mb-1.5 text-footnote font-medium text-label-3">Напоминания</h2>
+      <ul class="group-list mx-4">
+        <li v-for="r in REMINDERS" :key="r.key" class="flex min-h-12 items-center justify-between gap-3 py-2 pr-4 pl-4">
+          <span class="grid">
+            <span class="text-body">{{ r.title }}</span>
+            <span v-if="r.hint" class="text-footnote text-label-3">{{ r.hint }}</span>
+          </span>
           <USwitch
             :model-value="me.data.value.notify[r.key]"
             :disabled="patch.isPending.value"
             :aria-label="r.title"
+            color="success"
+            size="xl"
             @update:model-value="setNotify(r.key, $event)"
           />
-        </div>
-      </div>
-
-      <p class="mt-4 text-center text-xs font-bold text-night-300">
-        Часовой пояс: {{ me.data.value.timezone }}
-      </p>
+        </li>
+      </ul>
+      <p class="mx-8 mt-1.5 text-footnote text-label-3">Не больше трёх напоминаний в день. Часовой пояс: {{ me.data.value.timezone }}.</p>
     </template>
 
-    <div v-else class="card-milk mt-4 grid justify-items-center gap-3 rounded-[20px] p-5 text-center">
-      <p class="font-bold">Не удалось загрузить профиль</p>
-      <button class="chunky chunky-sky px-5 py-3" @click="me.refetch()">Повторить</button>
+    <div v-else class="mx-4 mt-4 grid justify-items-center gap-4 rounded-card bg-surface p-5 text-center">
+      <p class="text-body">Не удалось загрузить профиль</p>
+      <button type="button" class="btn btn-primary w-full" @click="me.refetch()">Повторить</button>
     </div>
   </section>
 </template>

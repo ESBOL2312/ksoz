@@ -84,63 +84,50 @@ function confirm() {
 </script>
 
 <template>
-  <div class="pb-4">
-    <div class="flex items-center gap-2 px-3.5 py-2.5">
-      <h1 class="font-display text-xl font-black text-gold-400">Базар</h1>
-      <span class="flex-1" />
+  <div class="pb-6">
+    <div class="flex items-center gap-2 px-4 pt-3 pb-2">
+      <h1 class="flex-1 text-large-title">Базар</h1>
       <CoinPill :value="balance" />
     </div>
 
-    <div class="showcase mx-3.5 grid grid-cols-[124px_1fr] items-end gap-3 overflow-hidden rounded-[22px] px-2 pt-3">
-      <Barys mood="idle" v-bind="wear" class="-mb-1 w-[124px]" label="Твой Барыс" />
-      <div class="grid gap-2 pb-4">
-        <h2 class="font-display text-base font-bold text-white">Твой Барыс</h2>
+    <section class="mx-4 flex h-[104px] items-end gap-2 overflow-hidden rounded-card bg-surface pr-4 pl-1">
+      <Barys mood="idle" v-bind="wear" class="-mb-5 w-[100px] shrink-0" label="Твой Барыс" />
+      <div class="grid gap-1.5 self-center">
+        <h2 class="text-headline">Твой Барыс</h2>
         <div v-if="worn.length" class="flex flex-wrap gap-1.5">
-          <span v-for="w in worn" :key="w.id" class="rounded-[9px] bg-milk px-2 py-0.5 text-xs font-extrabold text-ink">
-            {{ w.kk }} <em class="font-bold text-ink-2 not-italic">{{ w.ru }}</em>
-          </span>
+          <span v-for="w in worn" :key="w.id" class="rounded-md bg-surface-2 px-2 py-0.5 text-footnote">{{ w.kk }} · {{ w.ru }}</span>
         </div>
-        <p v-else class="text-xs font-bold text-sky-100">Купи тақию или шапан, и Барыс сразу их наденет</p>
+        <p v-else class="text-footnote text-label-2">Купи тақию или шапан, и Барыс сразу их наденет</p>
       </div>
-    </div>
+    </section>
 
-    <div class="flex gap-1.5 overflow-x-auto px-3.5 pt-3 pb-1 [scrollbar-width:none]" role="tablist">
+    <div class="segmented mx-4 mt-4" role="tablist" aria-label="Категории">
       <button
         v-for="[key, label] in cats"
         :key="key"
         type="button"
         role="tab"
+        class="segment"
         :aria-selected="cat === key"
-        class="flex-none rounded-full px-3.5 py-1.5 text-[13px] font-extrabold"
-        :class="cat === key ? 'bg-gold-400 text-ink' : 'bg-night-800 text-night-200'"
         @click="cat = key as typeof cat"
       >
         {{ label }}
       </button>
     </div>
-    <p class="mx-3.5 mt-1.5 text-xs font-bold text-night-300">Каждая покупка добавляет её слово в твои повторы.</p>
+    <p class="mx-4 mt-2 mb-3 text-footnote text-label-3">Каждая покупка добавляет её слово в твои повторы.</p>
 
-    <div v-if="isPending" class="grid grid-cols-2 gap-2.5 px-3.5 pt-2.5">
-      <USkeleton v-for="n in 6" :key="n" class="h-[190px] rounded-[20px]" />
+    <div v-if="isPending" class="grid grid-cols-2 gap-3 px-4">
+      <USkeleton v-for="n in 6" :key="n" class="h-[216px] rounded-card" />
     </div>
-    <div v-else-if="isError" class="mx-3.5 mt-4 grid gap-3 rounded-2xl bg-night-800 p-4 text-center">
-      <p class="font-bold">Не удалось загрузить базар.</p>
-      <button type="button" class="chunky chunky-gold px-4 py-2.5 text-sm" :disabled="isFetching" @click="refetch()">Повторить</button>
+    <div v-else-if="isError" class="mx-4 grid gap-4 rounded-card bg-surface p-5 text-center">
+      <p class="text-body">Не удалось загрузить базар.</p>
+      <button type="button" class="btn btn-primary w-full" :disabled="isFetching" @click="refetch()">Повторить</button>
     </div>
-    <div v-else-if="!shown.length" class="px-3.5 pt-6 text-center text-sm font-bold text-night-300">Здесь пока пусто.</div>
-    <div v-else class="grid grid-cols-2 gap-2.5 px-3.5 pt-2.5">
+    <p v-else-if="!shown.length" class="px-4 pt-6 text-center text-body text-label-2">Здесь пока пусто.</p>
+    <div v-else class="grid grid-cols-2 gap-3 px-4">
       <ItemCard v-for="i in shown" :key="i.id" :item="i" :busy="equipBusyId === i.id" @select="onSelect(i)" />
     </div>
 
     <PurchaseModal v-model:open="modalOpen" :item="picked" :pending="purchase.isPending.value" @confirm="confirm" />
   </div>
 </template>
-
-<style scoped>
-.showcase {
-  background:
-    radial-gradient(circle at 22% 70%, rgba(255, 255, 255, 0.28), transparent 45%),
-    linear-gradient(160deg, #3fb6dc, #1f7fae);
-  box-shadow: 0 5px 0 #165767;
-}
-</style>

@@ -7,10 +7,10 @@ defineProps<{ value: number | null | undefined }>();
 
 <template>
   <span
-    class="inline-flex items-center gap-1.5 rounded-full bg-night-900/85 py-1 pr-3 pl-1 text-sm font-black tabular-nums text-white"
-    aria-label="Алтын"
+    class="inline-flex h-8 items-center gap-1.5 rounded-full bg-surface pr-3 pl-1.5 text-subhead font-semibold tabular-nums"
+    :aria-label="value == null ? 'Алтын' : `Алтын: ${num(value)}`"
   >
-    <Art name="coin" class="size-6" />
+    <Art name="coin" class="size-[22px]" />
     {{ value == null ? '…' : num(value) }}
   </span>
 </template>

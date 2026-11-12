@@ -70,23 +70,44 @@ export function getWebApp(): TelegramWebApp | null {
   return wa && wa.initData ? wa : null;
 }
 
-export const NIGHT = '#15214B';
+/** Фон приложения в светлой и тёмной теме (совпадает с --k-canvas в main.css). */
+export const CANVAS = { light: '#F2F4F7', dark: '#0D1720' } as const;
+
+/**
+ * Светлая или тёмная тема: в Telegram — по теме клиента, вне его — по системной настройке.
+ * HIG: приложение следует выбранному оформлению, а не навязывает своё.
+ */
+export function applyColorScheme(wa: TelegramWebApp | null = getWebApp()) {
+  const scheme = wa
+    ? wa.colorScheme
+    : window.matchMedia?.('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+  document.documentElement.classList.toggle('dark', scheme === 'dark');
+  if (!wa) return;
+  try {
+    if (wa.isVersionAtLeast('6.1')) {
+      wa.setHeaderColor(CANVAS[scheme]);
+      wa.setBackgroundColor(CANVAS[scheme]);
+    }
+    if (wa.isVersionAtLeast('7.10')) wa.setBottomBarColor?.(CANVAS[scheme]);
+  } catch {
+    /* старые клиенты */
+  }
+}
 
 /** Вызывается один раз при старте. */
 export function initWebApp(): TelegramWebApp | null {
   const wa = getWebApp();
-  if (!wa) return null;
+  if (!wa) {
+    applyColorScheme(null);
+    window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', () => applyColorScheme(null));
+    return null;
+  }
   wa.ready();
   wa.expand();
-  try {
-    if (wa.isVersionAtLeast('6.1')) {
-      wa.setHeaderColor(NIGHT);
-      wa.setBackgroundColor(NIGHT);
-    }
-    if (wa.isVersionAtLeast('7.10')) wa.setBottomBarColor?.('#FBF3E3');
-  } catch {
-    /* старые клиенты */
-  }
+  applyColorScheme(wa);
+  wa.onEvent('themeChanged', () => applyColorScheme(wa));
   applySafeArea(wa);
   wa.onEvent('safeAreaChanged', () => applySafeArea(wa));
   wa.onEvent('contentSafeAreaChanged', () => applySafeArea(wa));
