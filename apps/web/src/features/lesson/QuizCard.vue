@@ -68,26 +68,31 @@ function submit() {
 
 <template>
   <div class="flex flex-1 flex-col gap-3">
-    <div class="flex items-center justify-between text-xs font-extrabold text-night-200">
-      <span>Слово {{ lesson.index + 1 }} из {{ lesson.total }}</span>
-      <span class="rounded-full bg-felt-600 px-2.5 py-[3px] text-white">{{ chip }}</span>
+    <div class="flex items-center justify-between gap-2">
+      <span class="text-footnote text-label-2">Слово {{ lesson.index + 1 }} из {{ lesson.total }}</span>
+      <span class="rounded-full bg-surface-2 px-2.5 py-0.5 text-footnote font-medium">{{ chip }}</span>
     </div>
 
-    <div class="card-milk overflow-hidden rounded-3xl" style="box-shadow: 0 6px 0 var(--color-milk-2)">
-      <WordPic :image-url="card.image_url" :ru="card.ru" :blanks="card.length" />
-      <div class="grid gap-0.5 px-4 pb-3.5 pt-3">
-        <small class="text-xs font-extrabold text-ink-2">Напиши по-казахски</small>
-        <b class="font-display text-[22px] font-bold">{{ card.ru }}</b>
+    <article class="flex items-stretch overflow-hidden rounded-card bg-surface">
+      <WordPic :image-url="card.image_url" :ru="card.ru" compact />
+      <div class="grid content-center gap-0.5 p-4">
+        <span class="text-footnote text-label-2">Напиши по-казахски</span>
+        <b class="text-title2">{{ card.ru }}</b>
+        <span class="text-footnote tracking-[0.3em] text-label-2" :aria-label="`${card.length} ${plural(card.length, ['буква', 'буквы', 'букв'])}`">{{
+          '_'.repeat(Math.min(card.length, 14))
+        }}</span>
       </div>
-    </div>
+    </article>
 
-    <div>
+    <div class="grid gap-1.5">
+      <label for="quiz-answer" class="text-footnote text-label-2">Ответ</label>
       <div
-        class="flex h-14 items-center gap-2 rounded-2xl border-[3px] bg-white px-3.5 text-ink"
-        :class="[errorText ? 'border-felt-600' : 'border-sky-500', shake ? 'animate-[shake_0.35s]' : '']"
+        class="flex h-14 items-center gap-2 rounded-control border-2 bg-surface px-3.5"
+        :class="[errorText ? 'border-danger' : 'border-accent', shake ? 'animate-[shake_0.35s]' : '']"
         @animationend="shake = false"
       >
         <input
+          id="quiz-answer"
           ref="field"
           v-model="lesson.input"
           type="text"
@@ -98,35 +103,22 @@ function submit() {
           spellcheck="false"
           autocomplete="off"
           aria-label="Ответ по-казахски"
-          class="min-w-0 flex-1 bg-transparent font-display text-[22px] font-bold tracking-[0.02em] text-ink caret-felt-600 outline-none"
+          placeholder="Напиши слово"
+          class="min-w-0 flex-1 bg-transparent text-title2 font-semibold text-label caret-accent outline-none placeholder:font-normal placeholder:text-label-3"
           @keydown.enter.prevent="submit"
         />
-        <span class="shrink-0 whitespace-nowrap text-xs font-extrabold text-ink-2">{{ lenText }}</span>
+        <span class="shrink-0 whitespace-nowrap text-footnote text-label-2">{{ lenText }}</span>
       </div>
-      <div class="min-h-[18px] pt-1 text-center text-xs font-extrabold text-felt-300">{{ errorText }}</div>
+      <p class="min-h-[18px] text-center text-footnote text-danger" aria-live="polite">{{ errorText }}</p>
     </div>
 
     <KazakhKeys @key="(l) => put(l)" @del="put('', true)" />
 
-    <div class="mt-auto grid grid-cols-[auto_1fr] gap-2.5 pt-1">
-      <button
-        type="button"
-        class="chunky chunky-night flex items-center gap-1.5 px-4 text-[13px] font-black"
-        :disabled="lesson.busy"
-        @pointerdown.prevent
-        @click="lesson.hint()"
-      >
-        <Art name="horn" class="size-[18px]" style="color: #f2b42c" />Подсказка
+    <div class="mt-auto grid grid-cols-[auto_1fr] gap-3 pt-1">
+      <button type="button" class="btn btn-secondary font-medium" :disabled="lesson.busy" @pointerdown.prevent @click="lesson.hint()">
+        <Art name="horn" class="size-5 text-altyn-label" />Подсказка
       </button>
-      <button
-        type="button"
-        class="chunky chunky-sky px-4 py-[15px] text-[15px]"
-        :disabled="!canCheck"
-        @pointerdown.prevent
-        @click="submit"
-      >
-        Тексеру
-      </button>
+      <button type="button" class="btn btn-primary" :disabled="!canCheck" @pointerdown.prevent @click="submit">Тексеру</button>
     </div>
   </div>
 </template>

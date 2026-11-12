@@ -12,25 +12,27 @@ const dotText = (i: number) => (i < at.value ? '✓' : i === 4 ? '∞' : String(
 </script>
 
 <template>
-  <div class="grid gap-2.5 rounded-[18px] bg-night-800 px-3.5 py-3">
-    <div class="flex justify-between text-xs font-extrabold text-night-200">
-      <span>Когда слово вернётся</span><b class="text-white">{{ when }}</b>
+  <section class="grid gap-3 rounded-card bg-surface px-4 pt-3 pb-3.5" aria-label="Когда слово вернётся">
+    <div class="flex justify-between gap-2 text-subhead">
+      <span class="text-label-2">Слово вернётся</span><b class="font-semibold">{{ when }}</b>
     </div>
-    <div class="relative grid grid-cols-5">
-      <div class="absolute inset-x-[10%] top-[11px] h-1 rounded bg-night-700" />
-      <div class="absolute left-[10%] top-[11px] h-1 rounded bg-sky-500" :style="{ width: `${at * 20}%` }" />
-      <div
+    <ol class="relative grid grid-cols-5">
+      <li class="absolute inset-x-[10%] top-[13px] h-0.5 bg-surface-2" aria-hidden="true" />
+      <li class="absolute top-[13px] left-[10%] h-0.5 bg-ok" :style="{ width: `${at * 20}%` }" aria-hidden="true" />
+      <li
         v-for="(label, i) in STEP_LABELS"
         :key="label"
-        class="relative z-10 grid justify-items-center gap-1 text-[11px] font-extrabold"
-        :class="i < at ? 'text-white' : i === at ? 'text-gold-400' : 'text-night-300'"
+        class="relative z-10 grid justify-items-center gap-1 text-caption1"
+        :class="i === at ? 'font-semibold text-label' : i < at ? 'text-label-2' : 'text-label-3'"
       >
-        <i
-          class="grid size-[26px] place-items-center rounded-full border-[3px] border-night-800 text-[13px] not-italic"
-          :class="i < at ? 'bg-sky-500 text-white' : i === at ? 'bg-gold-400 text-ink shadow-[0_0_0_3px_rgba(242,180,44,0.35)]' : 'bg-night-700 text-white'"
-        >{{ dotText(i) }}</i>
+        <span
+          class="grid size-7 place-items-center rounded-full text-footnote font-semibold"
+          :class="i < at ? 'bg-ok text-on-ok' : i === at ? 'bg-altyn text-on-altyn ring-[3px] ring-altyn/35' : 'bg-surface-2 text-label-2'"
+          aria-hidden="true"
+          >{{ dotText(i) }}</span
+        >
         {{ label }}
-      </div>
-    </div>
-  </div>
+      </li>
+    </ol>
+  </section>
 </template>

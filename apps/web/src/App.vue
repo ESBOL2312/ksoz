@@ -69,15 +69,15 @@ onBeforeUnmount(() => {
       class="grid min-h-dvh place-content-center justify-items-center gap-4 px-6 text-center"
     >
       <Barys :mood="session.unauthorized ? 'sleep' : 'wave'" class="w-40" />
-      <h1 class="font-display text-2xl font-black text-gold-400">Сөз ауылы</h1>
-      <p class="max-w-xs text-night-200">
+      <h1 class="text-title1">Сөз ауылы</h1>
+      <p class="max-w-xs text-body text-label-2">
         {{
           session.unauthorized
             ? 'Сессия истекла. Закройте миниапп и откройте его снова из бота.'
             : 'Миниапп работает внутри Telegram. Откройте его через бота.'
         }}
       </p>
-      <a v-if="!session.unauthorized" :href="botLink" class="chunky chunky-gold px-6 py-3">Открыть бота</a>
+      <a v-if="!session.unauthorized" :href="botLink" class="btn btn-primary w-full max-w-xs">Открыть бота</a>
     </main>
 
     <div v-else class="flex min-h-dvh flex-col" style="padding-top: var(--tg-safe-top)">

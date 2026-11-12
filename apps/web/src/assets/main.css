@@ -3,111 +3,223 @@
 
 @source "../";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /*
- * Палитра из макета «Сөз ауылы»: войлок, алтын, лазурь.
- * Шкалы 50–950 нужны Nuxt UI (primary=felt, secondary=gold, success=sky, neutral=night).
+ * Дизайн-система «Көк пен алтын» по Apple HIG:
+ * небесно-синий для действий и выбора, солнечно-золотой только для алтына и наград,
+ * зелёный «верно», красный только для текста ошибки. Светлая и тёмная темы, как в Telegram.
+ * Каждая пара текст/фон не ниже 4.5:1.
  */
 @theme static {
-  --font-sans: "Nunito", "Segoe UI", system-ui, sans-serif;
-  --font-display: "Rubik", "Nunito", system-ui, sans-serif;
+  --font-sans: "Rubik", -apple-system, system-ui, sans-serif;
+  --font-display: "Rubik", -apple-system, system-ui, sans-serif;
 
-  --color-felt-50: #fdf3f2;
-  --color-felt-100: #fbe4e1;
-  --color-felt-200: #f8cdc8;
-  --color-felt-300: #f2aaa2;
-  --color-felt-400: #e8786b;
-  --color-felt-500: #d9493b;
-  --color-felt-600: #c7382b;
-  --color-felt-700: #a82e22;
-  --color-felt-800: #8e2219;
-  --color-felt-900: #73221b;
-  --color-felt-950: #3e0d09;
+  /* отступы не зависят от размера шрифта: шаг 4 px */
+  --spacing: 4px;
 
-  --color-gold-50: #fef9ec;
-  --color-gold-100: #fcedc9;
-  --color-gold-200: #f9d98e;
-  --color-gold-300: #f6c453;
-  --color-gold-400: #f2b42c;
-  --color-gold-500: #e09514;
-  --color-gold-600: #b97f12;
-  --color-gold-700: #9a5a10;
-  --color-gold-800: #7d4614;
-  --color-gold-900: #673a14;
-  --color-gold-950: #3b1d06;
+  /* шкала текстовых стилей iOS (Large). rem = 17px по умолчанию и растёт вместе с Dynamic Type */
+  --text-large-title: 2rem;
+  --text-large-title--line-height: 1.206;
+  --text-large-title--font-weight: 700;
+  --text-title1: 1.647rem;
+  --text-title1--line-height: 1.214;
+  --text-title1--font-weight: 700;
+  --text-title2: 1.294rem;
+  --text-title2--line-height: 1.273;
+  --text-title2--font-weight: 700;
+  --text-title3: 1.176rem;
+  --text-title3--line-height: 1.25;
+  --text-title3--font-weight: 600;
+  --text-headline: 1rem;
+  --text-headline--line-height: 1.294;
+  --text-headline--font-weight: 600;
+  --text-body: 1rem;
+  --text-body--line-height: 1.294;
+  --text-callout: 0.941rem;
+  --text-callout--line-height: 1.3125;
+  --text-subhead: 0.882rem;
+  --text-subhead--line-height: 1.333;
+  --text-footnote: 0.765rem;
+  --text-footnote--line-height: 1.385;
+  --text-caption1: 0.706rem;
+  --text-caption1--line-height: 1.333;
+  --text-caption1--font-weight: 500;
+  --text-caption2: 0.647rem;
+  --text-caption2--line-height: 1.18;
+  --text-caption2--font-weight: 600;
 
-  --color-sky-50: #ecfcff;
-  --color-sky-100: #cff6fe;
-  --color-sky-200: #a5edfc;
-  --color-sky-300: #67dff9;
-  --color-sky-400: #22c7ee;
-  --color-sky-500: #19aecb;
-  --color-sky-600: #0e7e95;
-  --color-sky-700: #116a7e;
-  --color-sky-800: #165767;
-  --color-sky-900: #174957;
-  --color-sky-950: #082f3b;
+  /* радиусы: карточки 16, кнопки и поля 12, клавиши 9 */
+  --radius-card: 16px;
+  --radius-control: 12px;
+  --radius-key: 9px;
 
-  --color-night-50: #f1f3fb;
-  --color-night-100: #dce0f6;
-  --color-night-200: #c9cdea;
-  --color-night-300: #9ea6d6;
-  --color-night-400: #6f7cbd;
-  --color-night-500: #4b5aa6;
-  --color-night-600: #3d52a3;
-  --color-night-700: #33468f;
-  --color-night-800: #203272;
-  --color-night-900: #15214b;
-  --color-night-950: #0b1230;
+  /* шкалы для Nuxt UI (primary=kok, secondary=gold) */
+  --color-kok-50: #eef8fd;
+  --color-kok-100: #d6eefa;
+  --color-kok-200: #b0dff5;
+  --color-kok-300: #7ccbee;
+  --color-kok-400: #3cb4e7;
+  --color-kok-500: #1592d3;
+  --color-kok-600: #0a72b5;
+  --color-kok-700: #075688;
+  --color-kok-800: #0b486f;
+  --color-kok-900: #0e3d5c;
+  --color-kok-950: #08263b;
 
-  --color-milk: #fbf3e3;
-  --color-milk-2: #f1e3c8;
-  --color-ink: #1b1736;
-  --color-ink-2: #5a5478;
-  --color-grass: #7daa45;
+  --color-gold-50: #fffbea;
+  --color-gold-100: #fff3c4;
+  --color-gold-200: #ffe78a;
+  --color-gold-300: #ffd84a;
+  --color-gold-400: #fec50c;
+  --color-gold-500: #e8a800;
+  --color-gold-600: #b98200;
+  --color-gold-700: #8a5a00;
+  --color-gold-800: #6e4706;
+  --color-gold-900: #5c3b0b;
+  --color-gold-950: #352000;
+}
 
-  /* карточки (rounded-3xl): 16px вместо 6 × --ui-radius из Nuxt UI */
-  --radius-3xl: 1rem;
+/* Семантические цвета: утилиты bg-canvas, bg-surface, text-label-2, bg-accent… */
+@theme inline {
+  --color-canvas: var(--k-canvas);
+  --color-surface: var(--k-surface);
+  --color-surface-2: var(--k-surface-2);
+  --color-thumb: var(--k-thumb);
+  --color-label: var(--k-label);
+  --color-label-2: var(--k-label-2);
+  --color-label-3: var(--k-label-3);
+  --color-separator: var(--k-separator);
+  --color-bar: var(--k-bar);
+  --color-accent: var(--k-accent);
+  --color-on-accent: var(--k-on-accent);
+  --color-accent-shade: var(--k-accent-shade);
+  --color-tint: var(--k-tint);
+  --color-surface-shade: var(--k-surface-shade);
+  --color-altyn: var(--k-altyn);
+  --color-on-altyn: var(--k-on-altyn);
+  --color-altyn-label: var(--k-altyn-label);
+  --color-ok: var(--k-ok);
+  --color-on-ok: var(--k-on-ok);
+  --color-ok-label: var(--k-ok-label);
+  --color-danger: var(--k-danger);
+  --color-word: var(--k-word);
+  --color-key: var(--k-key);
+  --color-key-shade: var(--k-key-shade);
+  --color-inverse: var(--k-inverse);
+  --color-on-inverse: var(--k-on-inverse);
+  --color-sky-art: #3fb6dc;
 }
 
 :root {
-  /* фон приложения */
-  --ui-bg: var(--color-night-900);
-  --ui-bg-muted: var(--color-night-800);
-  --ui-bg-elevated: var(--color-night-800);
-  --ui-bg-accented: var(--color-night-700);
-  --ui-text: var(--color-milk);
-  --ui-text-muted: var(--color-night-300);
-  --ui-text-toned: var(--color-night-200);
-  --ui-text-highlighted: #fff;
-  --ui-border: var(--color-night-700);
-  /* база для rounded-*: в Nuxt UI xl = 3×, 2xl = 4× --ui-radius → 9px / 12px */
+  --k-canvas: #f2f4f7;
+  --k-surface: #ffffff;
+  --k-surface-2: #e8ecf1;
+  --k-thumb: #ffffff;
+  --k-label: #0f1b24;
+  --k-label-2: #44535f;
+  --k-label-3: #56646f;
+  --k-separator: rgba(15, 27, 36, 0.12);
+  --k-bar: rgba(248, 250, 252, 0.94);
+  --k-accent: #0a72b5;
+  --k-on-accent: #ffffff;
+  --k-accent-shade: #075688;
+  --k-tint: #0a72b5;
+  --k-surface-shade: #c9d1da;
+  --k-altyn: #fec50c;
+  --k-on-altyn: #2b2100;
+  --k-altyn-label: #8a5a00;
+  --k-ok: #1a7f37;
+  --k-on-ok: #ffffff;
+  --k-ok-label: #1a7f37;
+  --k-danger: #c62828;
+  --k-word: #0a72b5;
+  --k-key: #ffffff;
+  --k-key-shade: #c9d1da;
+  --k-inverse: #0f1b24;
+  --k-on-inverse: #ffffff;
+  --k-thumb-shadow: 0 1px 3px rgba(15, 27, 36, 0.18);
+
+  --ui-primary: var(--color-kok-600);
+  --ui-secondary: var(--color-gold-400);
+  --ui-success: #1a7f37;
+  --ui-error: #c62828;
+  --ui-bg: var(--k-canvas);
+  --ui-bg-muted: var(--k-surface-2);
+  --ui-bg-elevated: var(--k-surface);
+  --ui-bg-accented: var(--k-surface-2);
+  --ui-text: var(--k-label);
+  --ui-text-muted: var(--k-label-3);
+  --ui-text-toned: var(--k-label-2);
+  --ui-text-highlighted: var(--k-label);
+  --ui-border: var(--k-separator);
   --ui-radius: 0.1875rem;
 
   /* отступы безопасной зоны Telegram (заполняются в telegram/webapp.ts) */
   --tg-safe-top: env(safe-area-inset-top, 0px);
   --tg-safe-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: light;
 }
 
 .dark {
-  --ui-primary: var(--color-felt-600);
+  --k-canvas: #0d1720;
+  --k-surface: #172430;
+  --k-surface-2: #22323f;
+  --k-thumb: #3a4d5c;
+  --k-label: #f4f7fa;
+  --k-label-2: #b9c6d0;
+  --k-label-3: #8fa0ad;
+  --k-separator: rgba(255, 255, 255, 0.1);
+  --k-bar: rgba(13, 23, 32, 0.94);
+  --k-accent: #3cb4e7;
+  --k-on-accent: #062130;
+  --k-accent-shade: #1f7fa8;
+  --k-tint: #5cc3ee;
+  --k-surface-shade: #0a1218;
+  --k-altyn: #fec50c;
+  --k-on-altyn: #2b2100;
+  --k-altyn-label: #ffcf3d;
+  --k-ok: #34c759;
+  --k-on-ok: #04210d;
+  --k-ok-label: #4ade80;
+  --k-danger: #ff8a80;
+  --k-word: #5cc3ee;
+  --k-key: #22323f;
+  --k-key-shade: #0a1218;
+  --k-inverse: #f4f7fa;
+  --k-on-inverse: #0d1720;
+  --k-thumb-shadow: none;
+
+  --ui-primary: var(--color-kok-400);
   --ui-secondary: var(--color-gold-400);
-  --ui-success: var(--color-sky-500);
-  --ui-error: var(--color-felt-500);
-  --ui-bg: var(--color-night-900);
-  --ui-bg-muted: var(--color-night-800);
-  --ui-bg-elevated: var(--color-night-800);
-  --ui-bg-accented: var(--color-night-700);
-  --ui-text: var(--color-milk);
-  --ui-text-muted: var(--color-night-300);
-  --ui-text-toned: var(--color-night-200);
-  --ui-text-highlighted: #fff;
-  --ui-border: var(--color-night-700);
+  --ui-success: #34c759;
+  --ui-error: #ff8a80;
+  --ui-bg: var(--k-canvas);
+  --ui-bg-muted: var(--k-surface-2);
+  --ui-bg-elevated: var(--k-surface);
+  --ui-bg-accented: var(--k-surface-2);
+  --ui-text: var(--k-label);
+  --ui-text-muted: var(--k-label-3);
+  --ui-text-toned: var(--k-label-2);
+  --ui-text-highlighted: var(--k-label);
+  --ui-border: var(--k-separator);
+  color-scheme: dark;
+}
+
+/* Dynamic Type: на устройствах Apple базовый размер берётся из системной настройки текста */
+html {
+  font-size: 17px;
+}
+@supports (font: -apple-system-body) {
+  html {
+    font: -apple-system-body;
+  }
 }
 
 html,
 body {
-  background: var(--color-night-900);
-  color: var(--color-milk);
+  background: var(--k-canvas);
+  color: var(--k-label);
   font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
@@ -115,52 +227,103 @@ body {
 
 body {
   margin: 0;
-  /* орнамент «қошқар мүйіз» на фоне */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cpath d='M32 52V36c0-10-10-15-16-10-4 4-1 10 4 8M32 36c0-10 10-15 16-10 4 4 1 10-4 8M32 20V12' fill='none' stroke='%23F2B42C' stroke-opacity='.07' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
 }
 
-/* «толстые» кнопки из макета: цветная плашка с нижней тенью */
-@utility chunky {
-  border-radius: 18px;
-  font-family: var(--font-display);
-  font-weight: 700;
-  transition: transform 0.08s, box-shadow 0.08s;
+/*
+ * Кнопки. Одна главная (btn-primary) на экран; btn-reward только для алтына.
+ * «Толстая» тень 3 px и нажатие вниз: видимое состояние нажатия (HIG).
+ */
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 0 16px;
+  border-radius: var(--radius-control);
+  font-size: var(--text-headline);
+  line-height: var(--text-headline--line-height);
+  font-weight: 600;
+  transition: transform 0.08s, box-shadow 0.08s, opacity 0.15s;
   &:active:not(:disabled) {
-    transform: translateY(4px);
-    box-shadow: 0 1px 0 var(--chunky-shadow, rgba(0, 0, 0, 0.3));
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--btn-shade, transparent);
   }
   &:disabled {
-    opacity: 0.55;
+    opacity: 0.45;
   }
 }
-@utility chunky-gold {
-  background: var(--color-gold-400);
-  color: var(--color-ink);
-  --chunky-shadow: var(--color-gold-600);
-  box-shadow: 0 5px 0 var(--color-gold-600);
+@utility btn-primary {
+  background: var(--k-accent);
+  color: var(--k-on-accent);
+  --btn-shade: var(--k-accent-shade);
+  box-shadow: 0 3px 0 var(--k-accent-shade);
 }
-@utility chunky-sky {
-  background: var(--color-sky-500);
-  color: #fff;
-  --chunky-shadow: var(--color-sky-600);
-  box-shadow: 0 5px 0 var(--color-sky-600);
+@utility btn-secondary {
+  background: var(--k-surface-2);
+  color: var(--k-label);
+  --btn-shade: var(--k-surface-shade);
+  box-shadow: 0 3px 0 var(--k-surface-shade);
 }
-@utility chunky-felt {
-  background: var(--color-felt-600);
-  color: #fff;
-  --chunky-shadow: var(--color-felt-800);
-  box-shadow: 0 5px 0 var(--color-felt-800);
+@utility btn-reward {
+  background: var(--k-altyn);
+  color: var(--k-on-altyn);
+  --btn-shade: #b98200;
+  box-shadow: 0 3px 0 #b98200;
 }
-@utility chunky-night {
-  background: var(--color-night-800);
-  color: var(--color-gold-400);
-  --chunky-shadow: #0e1838;
-  box-shadow: 0 5px 0 #0e1838;
+/* текстовая кнопка: без фона, но с зоной касания 44 px */
+@utility btn-plain {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: var(--text-headline);
+  line-height: var(--text-headline--line-height);
+  font-weight: 500;
+  color: var(--k-tint);
+  &:active:not(:disabled) {
+    opacity: 0.6;
+  }
+  &:disabled {
+    opacity: 0.45;
+  }
 }
-@utility card-milk {
-  background: var(--color-milk);
-  color: var(--color-ink);
-  box-shadow: 0 5px 0 var(--color-milk-2);
+
+/* сгруппированный список как в iOS: строки с разделителем, отступ под иконку */
+@utility group-list {
+  border-radius: var(--radius-card);
+  background: var(--k-surface);
+  overflow: hidden;
+  & > * + * {
+    box-shadow: inset 0 1px 0 var(--k-separator);
+  }
+}
+/* сегментированный контроль */
+@utility segmented {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  padding: 2px;
+  border-radius: var(--radius-key);
+  background: var(--k-surface-2);
+}
+@utility segment {
+  min-height: 32px;
+  border-radius: 7px;
+  font-size: var(--text-footnote);
+  line-height: var(--text-footnote--line-height);
+  font-weight: 500;
+  color: var(--k-label-2);
+  &[aria-selected="true"],
+  &[aria-checked="true"] {
+    background: var(--k-thumb);
+    color: var(--k-label);
+    font-weight: 600;
+    box-shadow: var(--k-thumb-shadow);
+  }
 }
 
 @keyframes bob {

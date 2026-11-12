@@ -14,26 +14,22 @@ const tabs: { to: string; name: string; label: string; icon: ArtName }[] = [
 </script>
 
 <template>
+  <!-- Таб-бар iOS: только навигация, всегда с подписями, выбранная вкладка окрашена акцентом -->
   <nav
-    class="grid grid-cols-4 rounded-t-[22px] border-t border-white/10 bg-night-950/95 px-2 pt-2 text-night-300 shadow-[0_-8px_24px_rgba(5,10,30,0.45)] backdrop-blur-md"
-    style="padding-bottom: calc(10px + var(--tg-safe-bottom))"
+    class="grid grid-cols-4 border-t border-separator bg-bar px-2 pt-1.5 text-label-3 backdrop-blur-md"
+    style="padding-bottom: calc(4px + var(--tg-safe-bottom))"
     aria-label="Разделы"
   >
     <RouterLink
       v-for="t in tabs"
       :key="t.name"
       :to="t.to"
-      class="grid justify-items-center gap-1 py-1 text-[11px] font-extrabold transition-colors"
-      :class="route.name === t.name ? 'text-gold-400' : ''"
+      class="grid min-h-[49px] content-center justify-items-center gap-0.5 text-caption2 transition-colors"
+      :class="route.name === t.name ? 'text-tint' : ''"
       :aria-current="route.name === t.name ? 'page' : undefined"
       @click="haptics.select()"
     >
-      <span
-        class="grid h-8 w-14 place-items-center rounded-full transition-all duration-200"
-        :class="route.name === t.name ? 'bg-gold-400 text-night-950 shadow-[0_3px_0_var(--color-gold-600)]' : ''"
-      >
-        <Art :name="t.icon" class="size-6" />
-      </span>
+      <Art :name="t.icon" class="size-[26px]" />
       {{ t.label }}
     </RouterLink>
   </nav>

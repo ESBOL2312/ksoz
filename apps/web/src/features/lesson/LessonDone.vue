@@ -20,84 +20,75 @@ const triesText = (t: number | null) => (t == null ? 'повторим' : t === 
 
 <template>
   <div class="flex flex-1 flex-col gap-4">
-    <div class="grid justify-items-center gap-2 pt-4 text-center">
-      <div class="relative grid place-items-center">
-        <div class="rays pointer-events-none absolute size-[240px] animate-[spin_18s_linear_infinite] rounded-full" />
-        <Barys mood="happy" class="relative w-36" label="Барыс радуется" />
-      </div>
-      <h1 class="font-display text-3xl font-black text-gold-400 [text-shadow:0_4px_0_var(--color-felt-800)]">Сабақ бітті!</h1>
-      <div class="mt-1 flex items-center gap-2 rounded-full border-2 border-gold-400 bg-ink py-1.5 pl-2 pr-4 font-display text-xl font-black text-gold-400">
-        <Art name="coin" class="size-7" />+{{ num(lesson.stats.earned) }}
-      </div>
+    <div class="grid justify-items-center gap-1 pt-2 text-center">
+      <Barys mood="happy" class="-mb-2 w-32" label="Барыс радуется" />
+      <h1 class="text-large-title">Сабақ бітті!</h1>
+      <span class="mt-1 inline-flex h-9 items-center gap-1.5 rounded-full bg-surface pr-3.5 pl-2 text-headline">
+        <Art name="coin" class="size-6" />+{{ num(lesson.stats.earned) }} алтын
+      </span>
     </div>
 
-    <div v-if="hadReviews || !lesson.learned.length" class="grid grid-cols-3 gap-2.5 text-center">
-      <div class="rounded-2xl bg-sky-500 py-3 text-white shadow-[0_4px_0_var(--color-sky-600)]">
-        <b class="block font-display text-2xl font-black">{{ lesson.stats.correct }}</b>
-        <span class="text-xs font-extrabold">верно</span>
+    <dl v-if="hadReviews || !lesson.learned.length" class="grid grid-cols-3 rounded-card bg-surface py-3 text-center">
+      <div class="flex flex-col-reverse gap-0.5">
+        <dt class="text-footnote text-label-2">верно</dt>
+        <dd class="text-title2 text-ok-label">{{ lesson.stats.correct }}</dd>
       </div>
-      <div class="rounded-2xl bg-gold-400 py-3 text-ink shadow-[0_4px_0_var(--color-gold-600)]">
-        <b class="block font-display text-2xl font-black">{{ lesson.stats.almost }}</b>
-        <span class="text-xs font-extrabold">почти</span>
+      <div class="flex flex-col-reverse gap-0.5 border-x border-separator">
+        <dt class="text-footnote text-label-2">почти</dt>
+        <dd class="text-title2 text-altyn-label">{{ lesson.stats.almost }}</dd>
       </div>
-      <div class="rounded-2xl bg-felt-600 py-3 text-white shadow-[0_4px_0_var(--color-felt-800)]">
-        <b class="block font-display text-2xl font-black">{{ lesson.stats.wrong }}</b>
-        <span class="text-xs font-extrabold">ошибок</span>
+      <div class="flex flex-col-reverse gap-0.5">
+        <dt class="text-footnote text-label-2">ошибок</dt>
+        <dd class="text-title2 text-danger">{{ lesson.stats.wrong }}</dd>
       </div>
-    </div>
+    </dl>
 
-    <section v-if="lesson.learned.length" class="grid gap-2 rounded-[18px] bg-night-800 px-4 py-3" aria-label="Слова на изучении">
-      <div class="flex items-baseline justify-between gap-2 text-sm font-extrabold">
-        <span class="text-white">Учишь сейчас</span>
-        <span class="text-night-200">написал {{ remembered }} из {{ lesson.learned.length }}</span>
+    <section v-if="lesson.learned.length" class="grid gap-2" aria-label="Слова на изучении">
+      <div class="flex items-baseline justify-between gap-2">
+        <h2 class="text-title3">Учишь сейчас</h2>
+        <span class="text-footnote text-label-3">написал {{ remembered }} из {{ lesson.learned.length }}</span>
       </div>
-      <ul class="grid gap-1.5">
-        <li v-for="w in lesson.learned" :key="w.word_id" class="flex items-baseline justify-between gap-2">
+      <ul class="group-list">
+        <li v-for="w in lesson.learned" :key="w.word_id" class="flex min-h-12 items-center justify-between gap-2 px-4 py-2">
           <span class="min-w-0">
-            <b class="break-words font-display text-[17px] font-bold text-white">{{ w.kk }}</b>
-            <span class="text-sm font-bold text-night-200"> · {{ w.ru }}</span>
+            <b class="text-headline break-words">{{ w.kk }}</b>
+            <span class="text-subhead text-label-2"> · {{ w.ru }}</span>
           </span>
-          <span class="shrink-0 text-xs font-extrabold" :class="w.tries === 1 ? 'text-sky-400' : w.tries == null ? 'text-felt-300' : 'text-gold-400'">
+          <span class="shrink-0 text-footnote" :class="w.tries === 1 ? 'text-ok-label' : w.tries == null ? 'text-danger' : 'text-altyn-label'">
             {{ triesText(w.tries) }}
           </span>
         </li>
       </ul>
-      <p class="text-xs font-bold text-night-300">Первый повтор через 20 минут, потом через 1, 2 и 5 часов.</p>
+      <p class="text-footnote text-label-3">Первый повтор через 20 минут, потом через 1, 2 и 5 часов.</p>
     </section>
 
-    <details v-if="lesson.known.length" class="rounded-[18px] bg-night-800 px-4 py-3 text-sm font-extrabold">
-      <summary class="cursor-pointer text-night-200">Уже знал: {{ words(lesson.known.length) }}</summary>
+    <details v-if="lesson.known.length" class="rounded-card bg-surface px-4 py-3">
+      <summary class="flex min-h-6 cursor-pointer items-center text-body text-label-2">Уже знал: {{ words(lesson.known.length) }}</summary>
       <ul class="mt-2 grid gap-1">
         <li v-for="w in lesson.known" :key="w.word_id">
-          <b class="font-display font-bold text-white">{{ w.kk }}</b><span class="font-bold text-night-200"> · {{ w.ru }}</span>
+          <b class="text-headline">{{ w.kk }}</b><span class="text-subhead text-label-2"> · {{ w.ru }}</span>
         </li>
       </ul>
-      <p class="mt-2 text-xs font-bold text-night-300">Проверим их через месяц.</p>
+      <p class="mt-2 text-footnote text-label-3">Проверим их через месяц.</p>
     </details>
 
-    <div class="grid gap-2 rounded-[18px] bg-night-800 px-4 py-3 text-sm font-extrabold">
-      <div class="flex justify-between"><span class="text-night-200">Новых слов</span><b class="text-white">{{ words(lesson.stats.introduced) }}</b></div>
-      <div class="flex items-center justify-between">
-        <span class="text-night-200">Лучшее комбо</span>
-        <b class="flex items-center gap-1 text-gold-400"><Art name="flame" class="size-[18px]" />×{{ lesson.stats.bestCombo }}</b>
-      </div>
-    </div>
+    <ul class="group-list">
+      <li class="flex min-h-12 items-center justify-between px-4">
+        <span class="text-body">Новых слов</span><span class="text-body text-label-2">{{ words(lesson.stats.introduced) }}</span>
+      </li>
+      <li class="flex min-h-12 items-center justify-between px-4">
+        <span class="text-body">Лучшее комбо</span>
+        <span class="flex items-center gap-1 text-body text-label-2"><Art name="flame" class="size-[18px]" />×{{ lesson.stats.bestCombo }}</span>
+      </li>
+    </ul>
 
-    <p v-if="lesson.stats.queued > 0" class="rounded-2xl bg-night-800 px-4 py-2.5 text-center text-xs font-bold text-night-200">
+    <p v-if="lesson.stats.queued > 0" class="rounded-card bg-surface px-4 py-3 text-center text-footnote text-label-2">
       {{ lesson.stats.queued }} ответов сохранены без сети, алтын придёт, когда они отправятся.
     </p>
 
-    <div class="mt-auto grid gap-2.5">
-      <button type="button" class="chunky chunky-gold w-full px-4 py-[15px] text-[15px]" @click="lesson.start(lesson.combo)">Ещё урок</button>
-      <button type="button" class="chunky chunky-night w-full px-4 py-[15px] text-[15px] !text-white" @click="router.push('/')">В аул</button>
+    <div class="mt-auto grid gap-3">
+      <button type="button" class="btn btn-primary w-full" @click="lesson.start(lesson.combo)">Ещё урок</button>
+      <button type="button" class="btn btn-secondary w-full" @click="router.push('/')">В аул</button>
     </div>
   </div>
 </template>
-
-<style scoped>
-.rays {
-  background: repeating-conic-gradient(rgba(242, 180, 44, 0.2) 0 10deg, transparent 10deg 20deg);
-  -webkit-mask: radial-gradient(circle, #000 25%, transparent 68%);
-  mask: radial-gradient(circle, #000 25%, transparent 68%);
-}
-</style>

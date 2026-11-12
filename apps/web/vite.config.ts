@@ -7,15 +7,17 @@ export default defineConfig({
   plugins: [
     vue(),
     ui({
+      // светлую/тёмную тему выбираем сами по теме Telegram (telegram/webapp.ts)
+      colorMode: false,
       ui: {
         colors: {
-          primary: 'felt',
+          primary: 'kok',
           secondary: 'gold',
-          success: 'sky',
-          info: 'sky',
+          success: 'green',
+          info: 'kok',
           warning: 'gold',
-          error: 'felt',
-          neutral: 'night',
+          error: 'red',
+          neutral: 'slate',
         },
       },
     }),

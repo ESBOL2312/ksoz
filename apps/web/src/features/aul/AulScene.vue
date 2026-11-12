@@ -234,12 +234,12 @@ const fireflies = [
   right: 12px;
   top: 100px;
   background: #fff;
-  color: var(--color-ink);
-  border-radius: 16px;
+  color: #0f1b24;
+  border-radius: 12px;
   padding: 8px 12px;
-  font-size: 13px;
-  line-height: 1.3;
-  font-weight: 800;
+  font-size: var(--text-subhead);
+  line-height: var(--text-subhead--line-height);
+  font-weight: 500;
   box-shadow: 0 4px 0 rgba(14, 23, 29, 0.12);
   animation: pop 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) both 0.2s;
 }
@@ -254,7 +254,7 @@ const fireflies = [
   border-bottom: 0;
   transform: skewX(20deg);
 }
-.bubble :deep(i) { font-style: normal; color: var(--color-felt-600); }
+.bubble :deep(i) { font-style: normal; font-weight: 600; color: #0a72b5; }
 
 @keyframes twinkle { 50% { opacity: 0.25; transform: scale(0.7); } }
 @keyframes shoot { 0%, 92% { opacity: 0; transform: translate(0, 0) rotate(-20deg); } 94% { opacity: 1; } 100% { opacity: 0; transform: translate(-160px, 60px) rotate(-20deg); } }

@@ -14,7 +14,7 @@ const invite = useInvite();
 
 const SCOPES: { value: BaigeScope; label: string }[] = [
   { value: 'friends', label: 'Друзья' },
-  { value: 'city', label: 'Мой город' },
+  { value: 'city', label: 'Город' },
   { value: 'kz', label: 'Казахстан' },
 ];
 const scope = ref<BaigeScope>('friends');
@@ -43,7 +43,7 @@ const ratio = (score: number) => (started.value ? score / maxScore.value : 0);
 const isMe = (id: number) => id === myId.value;
 const label = (r: { user_id: number; first_name: string }) => (isMe(r.user_id) ? 'Сен' : r.first_name);
 
-const COLORS = ['#19AECB', '#C7382B', '#7DAA45', '#8A4B2A', '#B97F12', '#6F7CBD'];
+const COLORS = ['#0A72B5', '#B3261E', '#2E7D32', '#8A4B2A', '#8A5A00', '#5B4FB0'];
 const color = (id: number) => COLORS[Math.abs(id) % COLORS.length];
 const initial = (name: string) => (name.trim()[0] ?? '?').toUpperCase();
 
@@ -91,139 +91,101 @@ async function inviteFriend() {
 
 <template>
   <section class="pb-6">
-    <header class="grid gap-1 px-3.5 pt-3">
-      <h1 class="font-display text-[22px] font-black text-gold-400">Апталық бәйге</h1>
-      <p class="text-[13px] font-bold text-night-200">Скачки недели. До финиша {{ timeLeft }}.</p>
+    <header class="px-4 pt-3">
+      <h1 class="text-large-title">Бәйге</h1>
+      <p class="mt-0.5 text-subhead text-label-2">Скачки недели. До финиша {{ timeLeft }}.</p>
     </header>
 
-    <div class="mx-3.5 mt-2.5 grid grid-cols-3 rounded-[14px] bg-night-800 p-1" role="tablist">
-      <button
-        v-for="s in SCOPES"
-        :key="s.value"
-        role="tab"
-        :aria-selected="scope === s.value"
-        class="rounded-[10px] py-2 text-xs font-extrabold transition-colors"
-        :class="scope === s.value ? 'bg-milk text-ink' : 'text-night-200'"
-        @click="scope = s.value"
-      >
+    <div class="segmented mx-4 mt-4" role="tablist" aria-label="Соперники">
+      <button v-for="s in SCOPES" :key="s.value" type="button" role="tab" class="segment" :aria-selected="scope === s.value" @click="scope = s.value">
         {{ s.label }}
       </button>
     </div>
 
     <!-- город не выбран -->
-    <div v-if="noCity" class="card-milk mx-3.5 mt-4 grid justify-items-center gap-3 rounded-[20px] p-5 text-center">
+    <div v-if="noCity" class="mx-4 mt-4 grid justify-items-center gap-3 rounded-card bg-surface p-5 text-center">
       <Barys mood="think" class="w-28" />
-      <h2 class="font-display text-base font-bold">Выбери город в профиле</h2>
-      <p class="text-[13px] font-bold text-ink-2">Тогда ты увидишь скачки земляков и сможешь обогнать их.</p>
-      <button class="chunky chunky-gold w-full px-4 py-3.5 text-[15px]" @click="router.push('/profile')">
-        Открыть профиль
-      </button>
+      <h2 class="text-title3">Выбери город в профиле</h2>
+      <p class="text-subhead text-label-2">Тогда ты увидишь скачки земляков и сможешь обогнать их.</p>
+      <button type="button" class="btn btn-primary w-full" @click="router.push('/profile')">Открыть профиль</button>
     </div>
 
     <!-- загрузка -->
-    <div v-else-if="baige.isPending.value" class="mx-3.5 mt-3 grid gap-3" aria-busy="true">
-      <div class="h-44 animate-pulse rounded-[20px] bg-night-800" />
-      <div v-for="i in 3" :key="i" class="h-14 animate-pulse rounded-[14px] bg-night-800" />
+    <div v-else-if="baige.isPending.value" class="mx-4 mt-4 grid gap-3" aria-busy="true">
+      <div class="h-44 animate-pulse rounded-card bg-surface" />
+      <div class="h-56 animate-pulse rounded-card bg-surface" />
     </div>
 
-    <div v-else-if="baige.isError.value" class="card-milk mx-3.5 mt-4 grid justify-items-center gap-3 rounded-[20px] p-5 text-center">
-      <p class="font-bold">Не удалось загрузить бәйге</p>
-      <button class="chunky chunky-sky px-5 py-3" @click="baige.refetch()">Повторить</button>
+    <div v-else-if="baige.isError.value" class="mx-4 mt-4 grid justify-items-center gap-4 rounded-card bg-surface p-5 text-center">
+      <p class="text-body">Не удалось загрузить бәйге</p>
+      <button type="button" class="btn btn-primary w-full" @click="baige.refetch()">Повторить</button>
     </div>
 
     <template v-else-if="baige.data.value">
       <!-- пустые друзья -->
-      <div
-        v-if="scope === 'friends' && top.every((r) => isMe(r.user_id))"
-        class="card-milk mx-3.5 mt-4 grid justify-items-center gap-3 rounded-[20px] p-5 text-center"
-      >
+      <div v-if="scope === 'friends' && top.every((r) => isMe(r.user_id))" class="mx-4 mt-4 grid justify-items-center gap-3 rounded-card bg-surface p-5 text-center">
         <Barys mood="wave" class="w-32" />
-        <h2 class="font-display text-base font-bold">Пока ты один на старте</h2>
-        <p class="text-[13px] font-bold text-ink-2">Позови друга, и вы поскачете наперегонки: чья неделя будет богаче на верные ответы.</p>
-        <button class="chunky chunky-gold w-full px-4 py-3.5 text-[15px]" @click="inviteFriend">
-          Позвать друга в бәйге
-        </button>
+        <h2 class="text-title3">Пока ты один на старте</h2>
+        <p class="text-subhead text-label-2">Позови друга, и вы поскачете наперегонки: чья неделя будет богаче на верные ответы.</p>
+        <button type="button" class="btn btn-primary w-full" @click="inviteFriend">Позвать друга</button>
       </div>
 
       <template v-else>
         <!-- трек -->
-        <div
-          class="relative mx-3.5 mt-3 overflow-hidden rounded-[20px] pt-2.5 pb-1.5 shadow-[0_5px_0_#A9874A]"
-          style="background: linear-gradient(#e6c88f, #d9b270)"
-        >
-          <div
-            class="absolute top-0 right-3 bottom-0 w-2.5"
-            style="background: repeating-linear-gradient(#1b1736 0 8px, #fff 8px 16px)"
-            aria-hidden="true"
-          />
-          <div
-            v-for="r in riders"
-            :key="r.user_id"
-            class="relative h-9 border-b-2 border-dashed border-[rgba(120,80,30,.35)] last:border-b-0"
-          >
-            <span class="absolute top-[9px] left-1.5 text-[11px] font-black text-[rgba(70,40,10,.6)]">{{ label(r) }}</span>
+        <div class="relative mx-4 mt-4 overflow-hidden rounded-card bg-[#e9d3a4] py-1" aria-hidden="true">
+          <div class="absolute top-0 right-3.5 bottom-0 w-2" style="background: repeating-linear-gradient(#0f1b24 0 8px, #fff 8px 16px)" />
+          <div v-for="r in riders" :key="r.user_id" class="relative h-10 border-b-2 border-dashed border-[rgba(110,70,25,0.3)] last:border-b-0">
+            <span class="absolute top-[11px] left-2.5 text-caption1" :class="isMe(r.user_id) ? 'font-semibold text-[#8e2219]' : 'text-[#5a3a12]'">{{
+              label(r)
+            }}</span>
             <span
-              class="absolute top-0 left-0 h-[34px] w-[54px] [transition:left_1.6s_cubic-bezier(.2,.8,.2,1)]"
+              class="absolute top-0.5 left-0 h-[34px] w-[54px] [transition:left_1.6s_cubic-bezier(.2,.8,.2,1)]"
               :style="{ left: `calc((100% - 78px) * ${ratio(r.score)})` }"
             >
-              <Art name="horse" class="size-full" :label="`${label(r)}: ${num(r.score)}`" />
+              <Art name="horse" class="size-full" />
             </span>
           </div>
         </div>
-        <div class="flex justify-between px-3.5 pt-1.5 text-[11px] font-extrabold text-night-300">
+        <div class="flex justify-between px-4 pt-1.5 text-caption1 text-label-3" aria-hidden="true">
           <span>Старт, понедельник</span><span>Финиш, воскресенье</span>
         </div>
 
         <!-- таблица -->
-        <ol class="mx-3.5 mt-3 grid gap-1.5">
+        <ol class="group-list mx-4 mt-4" aria-label="Таблица бәйге">
           <li
             v-for="r in top"
             :key="r.user_id"
-            class="grid grid-cols-[22px_38px_1fr_auto] items-center gap-2.5 rounded-[14px] px-3 py-2"
-            :class="isMe(r.user_id) ? 'bg-milk text-ink' : 'bg-night-800'"
+            class="grid min-h-[52px] grid-cols-[24px_36px_1fr_auto] items-center gap-3 px-4"
+            :class="isMe(r.user_id) && 'bg-surface-2'"
           >
-            <span
-              class="text-center font-display text-sm font-black"
-              :class="isMe(r.user_id) ? 'text-felt-600' : r.place === 1 ? 'text-gold-400' : 'text-night-300'"
-              >{{ r.place }}</span
-            >
-            <span
-              class="grid size-[38px] place-items-center rounded-full font-display text-[15px] font-black text-white"
-              :style="{ background: color(r.user_id) }"
-              >{{ initial(r.first_name) }}</span
-            >
-            <span class="truncate text-sm font-black">{{ isMe(r.user_id) ? `${r.first_name} (ты)` : r.first_name }}</span>
-            <span class="font-display text-sm font-bold tabular-nums">{{ num(r.score) }}</span>
+            <span class="text-center text-headline" :class="r.place === 1 ? 'text-altyn-label' : isMe(r.user_id) ? '' : 'text-label-3'">{{ r.place }}</span>
+            <span class="grid size-9 place-items-center rounded-full text-subhead font-semibold text-white" :style="{ background: color(r.user_id) }" aria-hidden="true">{{
+              initial(r.first_name)
+            }}</span>
+            <span class="truncate text-body" :class="isMe(r.user_id) && 'font-semibold'">{{ isMe(r.user_id) ? `${r.first_name} (ты)` : r.first_name }}</span>
+            <span class="text-subhead font-semibold tabular-nums">{{ num(r.score) }}</span>
           </li>
-          <li
-            v-if="showMeExtra"
-            class="grid grid-cols-[22px_38px_1fr_auto] items-center gap-2.5 rounded-[14px] bg-milk px-3 py-2 text-ink"
-          >
-            <span class="text-center font-display text-sm font-black text-felt-600">{{ baige.data.value.me.place ?? '—' }}</span>
-            <span class="grid size-[38px] place-items-center rounded-full bg-felt-600 font-display text-[15px] font-black text-white">{{
+          <li v-if="showMeExtra" class="grid min-h-[52px] grid-cols-[24px_36px_1fr_auto] items-center gap-3 bg-surface-2 px-4">
+            <span class="text-center text-headline">{{ baige.data.value.me.place ?? '—' }}</span>
+            <span class="grid size-9 place-items-center rounded-full bg-kok-600 text-subhead font-semibold text-white" aria-hidden="true">{{
               initial(me.data.value?.first_name ?? 'С')
             }}</span>
-            <span class="truncate text-sm font-black">Сен (ты)</span>
-            <span class="font-display text-sm font-bold tabular-nums">{{ num(baige.data.value.me.score) }}</span>
+            <span class="truncate text-body font-semibold">Сен (ты)</span>
+            <span class="text-subhead font-semibold tabular-nums">{{ num(baige.data.value.me.score) }}</span>
           </li>
         </ol>
 
         <!-- приз -->
-        <div
-          v-if="baige.data.value.prize != null"
-          class="mx-3.5 mt-3 grid grid-cols-[auto_1fr] items-center gap-3 rounded-[18px] bg-felt-600 px-3.5 py-2.5 shadow-[0_5px_0_var(--color-felt-800)]"
-        >
-          <Art name="eagle" class="w-[60px]" />
-          <span>
-            <b class="block font-display text-sm font-bold">Приз победителю: {{ num(baige.data.value.prize) }} алтын</b>
-            <span class="text-xs font-bold opacity-90">Награда за самую богатую неделю</span>
+        <div v-if="baige.data.value.prize != null" class="mx-4 mt-4 flex items-center gap-3">
+          <Art name="eagle" class="w-[52px] shrink-0" />
+          <span class="grid">
+            <b class="text-headline">Приз победителю: {{ num(baige.data.value.prize) }} алтын</b>
+            <span class="text-footnote text-label-3">За самую богатую неделю верных ответов</span>
           </span>
         </div>
 
-        <div class="mx-3.5 mt-3.5">
-          <button class="chunky chunky-gold w-full px-4 py-3.5 text-[15px]" @click="inviteFriend">
-            Позвать друга в бәйге
-          </button>
+        <div class="mx-4 mt-4">
+          <button type="button" class="btn btn-primary w-full" @click="inviteFriend">Позвать друга</button>
         </div>
       </template>
     </template>

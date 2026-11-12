@@ -13,11 +13,11 @@ const parts = computed(() => {
 </script>
 
 <template>
-  <div class="grid gap-0.5 border-l-4 border-gold-400 pl-2.5">
-    <span class="text-[15px] font-black">
-      <template v-if="parts">{{ parts[0] }}<u class="decoration-gold-400 decoration-[3px] underline-offset-[3px]">{{ parts[1] }}</u>{{ parts[2] }}</template>
+  <div class="grid gap-0.5">
+    <span class="text-body">
+      <template v-if="parts">{{ parts[0] }}<u class="font-semibold decoration-altyn-label decoration-2 underline-offset-[3px]">{{ parts[1] }}</u>{{ parts[2] }}</template>
       <template v-else>{{ kk }}</template>
     </span>
-    <span class="text-[13px] font-bold text-ink-2">{{ ru }}</span>
+    <span class="text-footnote text-label-2">{{ ru }}</span>
   </div>
 </template>

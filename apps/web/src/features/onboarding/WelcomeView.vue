@@ -86,73 +86,67 @@ async function finish() {
 </script>
 
 <template>
-  <main class="mx-auto flex min-h-dvh max-w-md flex-col px-4 pt-6 pb-8">
+  <main class="mx-auto flex min-h-dvh max-w-md flex-col px-4 pt-6" style="padding-bottom: calc(16px + var(--tg-safe-bottom))">
     <!-- 1. приветствие -->
     <template v-if="step === 'hello'">
       <div class="grid flex-1 content-center justify-items-center gap-5 text-center">
-        <h1 class="font-display text-[44px] leading-none font-black text-gold-400 [text-shadow:0_4px_0_var(--color-felt-800)]">
-          Сөз ауылы
-        </h1>
-        <div class="relative h-60 w-full">
-          <div class="absolute inset-x-6 bottom-2 h-28 rounded-[50%] bg-sky-500/15 blur-xl" />
-          <Art name="yurt" class="absolute bottom-3 right-0 w-40 opacity-90" />
-          <Barys mood="wave" hat class="absolute bottom-0 left-[8%] w-44" label="Барыс" />
-          <div class="absolute top-2 right-2 max-w-[11rem] rounded-2xl bg-white px-3 py-2 text-left text-[13px] leading-snug font-extrabold text-ink shadow-[0_4px_0_rgba(0,0,0,0.15)]">
-            Сәлем! Мен <span class="text-felt-600">Барыс</span>. Үйренейік қазақша!
+        <h1 class="text-large-title">Сөз ауылы</h1>
+        <div class="relative h-56 w-full overflow-hidden rounded-card bg-sky-art">
+          <div class="absolute inset-x-[-20%] -bottom-20 h-36 rounded-[50%] bg-[#9cc25a]" aria-hidden="true" />
+          <Art name="yurt" class="absolute right-2 bottom-6 w-36" />
+          <Barys mood="wave" hat class="absolute -bottom-2 left-[4%] w-40" label="Барыс" />
+          <div class="absolute top-3 right-3 max-w-[11rem] rounded-control bg-white px-3 py-2 text-left text-subhead text-[#0f1b24]">
+            Сәлем! Мен <b class="font-semibold text-[#0a72b5]">Барыс</b>. Үйренейік қазақша!
           </div>
         </div>
-        <ul class="grid gap-2 text-left text-[15px] font-bold text-night-100">
-          <li class="flex items-center gap-3 rounded-2xl bg-night-800 px-4 py-3">
-            <Art name="horn" class="size-6 shrink-0 text-gold-400" />Учишь казахские слова
+        <ul class="group-list w-full text-left">
+          <li class="flex min-h-12 items-center gap-3 px-4 py-2 text-body">
+            <Art name="horn" class="size-6 shrink-0 text-altyn-label" />Учишь казахские слова
           </li>
-          <li class="flex items-center gap-3 rounded-2xl bg-night-800 px-4 py-3">
-            <Art name="coin" class="size-6 shrink-0" />Получаешь алтын за верные ответы
-          </li>
-          <li class="flex items-center gap-3 rounded-2xl bg-night-800 px-4 py-3">
-            <Art name="yurt" class="size-6 shrink-0" />Строишь свой аул и скачешь в бәйге
-          </li>
+          <li class="flex min-h-12 items-center gap-3 px-4 py-2 text-body"><Art name="coin" class="size-6 shrink-0" />Получаешь алтын за верные ответы</li>
+          <li class="flex min-h-12 items-center gap-3 px-4 py-2 text-body"><Art name="yurt" class="size-6 shrink-0" />Строишь свой аул и скачешь в бәйге</li>
         </ul>
       </div>
-      <button class="chunky chunky-gold mt-6 w-full px-4 py-4 text-base" @click="step = 'level'">Бастау</button>
+      <button type="button" class="btn btn-primary mt-6 w-full" @click="step = 'level'">Бастау</button>
     </template>
 
     <!-- 2. уровень -->
     <template v-else-if="step === 'level'">
       <div class="grid flex-1 content-center gap-5">
-        <div class="grid justify-items-center gap-3 text-center">
+        <div class="grid justify-items-center gap-2 text-center">
           <Barys mood="think" class="w-28" />
-          <h1 class="font-display text-2xl font-black text-gold-400">Какой у тебя уровень?</h1>
-          <p class="text-sm font-bold text-night-200">Подберём слова под тебя. Потом можно поменять в профиле.</p>
+          <h1 class="text-title1">Какой у тебя уровень?</h1>
+          <p class="text-body text-label-2">Подберём слова под тебя. Потом можно поменять в профиле.</p>
         </div>
-        <div class="grid gap-3">
-          <button
-            v-for="o in LEVEL_OPTIONS"
-            :key="o.level"
-            :disabled="busy"
-            class="card-milk flex items-center gap-4 rounded-[20px] px-4 py-3.5 text-left transition-transform active:translate-y-1 disabled:opacity-60"
-            @click="pickLevel(o.level)"
-          >
-            <span class="grid size-12 shrink-0 place-items-center rounded-full bg-felt-600 font-display text-lg font-black text-white shadow-[0_0_0_3px_var(--color-gold-400)]">{{
-              o.level
-            }}</span>
-            <span class="font-display text-[15px] font-bold">{{ o.text }}</span>
-          </button>
-        </div>
+        <ul class="group-list">
+          <li v-for="o in LEVEL_OPTIONS" :key="o.level">
+            <button
+              type="button"
+              :disabled="busy"
+              class="flex min-h-14 w-full items-center gap-4 px-4 py-2.5 text-left active:bg-surface-2 disabled:opacity-60"
+              @click="pickLevel(o.level)"
+            >
+              <span class="grid size-11 shrink-0 place-items-center rounded-full bg-kok-600 text-headline text-white">{{ o.level }}</span>
+              <span class="flex-1 text-body">{{ o.text }}</span>
+              <svg width="8" height="14" viewBox="0 0 8 14" class="text-label-3" aria-hidden="true">
+                <path d="M1.5 1.5L6.5 7l-5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          </li>
+        </ul>
       </div>
     </template>
 
     <!-- 3. перенос прогресса -->
     <template v-else>
-      <div class="grid flex-1 content-center justify-items-center gap-5 text-center">
+      <div class="grid flex-1 content-center justify-items-center gap-4 text-center">
         <Barys mood="happy" class="w-36" />
-        <h1 class="font-display text-2xl font-black text-gold-400">Перенести прогресс из старой версии?</h1>
-        <p class="max-w-xs text-sm font-bold text-night-200">
-          Нашли твои слова из прототипа: {{ legacyCount }}. Перенесём их в повторы, ничего не потеряется.
-        </p>
+        <h1 class="text-title1">Перенести прогресс из старой версии?</h1>
+        <p class="max-w-xs text-body text-label-2">Нашли твои слова из прототипа: {{ legacyCount }}. Перенесём их в повторы, ничего не потеряется.</p>
       </div>
       <div class="mt-6 grid gap-3">
-        <button class="chunky chunky-gold w-full px-4 py-4 text-base" :disabled="busy" @click="doImport">Перенести</button>
-        <button class="chunky chunky-night w-full px-4 py-3.5 text-[15px]" :disabled="busy" @click="finish">Начать заново</button>
+        <button type="button" class="btn btn-primary w-full" :disabled="busy" @click="doImport">Перенести</button>
+        <button type="button" class="btn btn-secondary w-full" :disabled="busy" @click="finish">Начать заново</button>
       </div>
     </template>
   </main>
