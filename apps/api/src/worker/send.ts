@@ -1,10 +1,10 @@
 import { GrammyError } from 'grammy';
 import type { Logger } from 'pino';
 import type { Db } from '../db/client.js';
-import { getUserForSend, lastSentAt, logSent, markBlocked } from './queries.js';
+import { getUserForSend, lastAnySentAt, lastSentAt, logSent, markBlocked } from './queries.js';
 import { reminderText } from './messages.js';
 import type { RateLimiter } from './rateLimiter.js';
-import { periodKey, SHORT_MIN_GAP_MS } from './rules.js';
+import { periodKey, sameSlot } from './rules.js';
 import type { SendPayload } from './scan.js';
 
 /** Низкоуровневая отправка текста пользователю (в проде: bot.api.sendMessage с кнопкой). */
@@ -29,13 +29,10 @@ export async function sendReminder(deps: SendDeps, p: SendPayload): Promise<Send
 
   // повторная проверка: между сканом и отправкой могло уйти то же самое
   const last = await lastSentAt(db, p.userId, p.kind);
-  if (last) {
-    const dup =
-      p.kind === 'short'
-        ? now().getTime() - last.getTime() < SHORT_MIN_GAP_MS
-        : periodKey(p.kind, last, user.timezone) === p.period;
-    if (dup) return 'skipped';
-  }
+  if (last && periodKey(p.kind, last, user.timezone) === p.period) return 'skipped';
+  // и не больше одного сообщения в окне (утро/день/вечер), какого бы вида оно ни было
+  const lastAny = await lastAnySentAt(db, p.userId);
+  if (lastAny && sameSlot(lastAny, now(), user.timezone)) return 'skipped';
 
   const text = reminderText(p.kind, p);
   const maxRetries = deps.maxRetries ?? 3;

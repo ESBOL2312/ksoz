@@ -69,7 +69,7 @@ describe.skipIf(!hasTestDb)('worker: reminders', () => {
     expect(jobs).toEqual([expect.objectContaining({ userId: 1, kind: 'short', n: 1 })]);
   });
 
-  it('scan + send: short review is sent once per hour and logged', async () => {
+  it('scan + send: short review is sent once per slot and logged', async () => {
     const now = at('2026-10-29', '14:00');
     await addUser(1);
     await addWord(1, wordIds[0]!, new Date(now.getTime() - 60_000));
@@ -81,14 +81,14 @@ describe.skipIf(!hasTestDb)('worker: reminders', () => {
     const logRows = await app.db.select().from(notificationLog);
     expect(logRows).toMatchObject([{ userId: 1, kind: 'short' }]);
 
-    // тот же проход через 30 минут и повторная отправка того же задания ничего не шлют
+    // тот же проход через 30 минут и повторная отправка в том же окне ничего не шлют
     const later = new Date(now.getTime() + 30 * 60_000);
     expect(await scan(later)).toEqual([]);
     const dup = await sendReminder(deps(send, later), { userId: 1, kind: 'short', period: 'x' });
     expect(dup).toBe('skipped');
-    // через час — снова
-    const hourLater = new Date(now.getTime() + 61 * 60_000);
-    expect(await scan(hourLater)).toHaveLength(1);
+    // через час — не окно, молчим; вечером — снова
+    expect(await scan(new Date(now.getTime() + 61 * 60_000))).toEqual([]);
+    expect(await scan(at('2026-10-29', '20:05'))).toHaveLength(1);
   });
 
   it('scan: daily reminder at 9:xx local, once per day, with word count', async () => {
@@ -117,7 +117,7 @@ describe.skipIf(!hasTestDb)('worker: reminders', () => {
   });
 
   it('scan: baige results on Sunday evening with ranks', async () => {
-    const now = at('2026-11-01', '21:10'); // воскресенье, ISO 2026-W44
+    const now = at('2026-11-01', '20:10'); // воскресенье, ISO 2026-W44
     for (const id of [1, 2, 3, 4]) await addUser(id);
     await app.db.insert(weeklyScores).values([
       { week: '2026-W44', userId: 1, score: 50 },
@@ -137,7 +137,7 @@ describe.skipIf(!hasTestDb)('worker: reminders', () => {
     expect(sent[0]!.text).toContain('1 / 3');
     expect(await scan(new Date(now.getTime() + 20 * 60_000)).then((j) => j.map((x) => x.userId).sort())).toEqual([1, 3]);
     // не в воскресенье
-    expect(await scan(at('2026-10-31', '21:10'))).toEqual([]);
+    expect(await scan(at('2026-10-31', '20:10'))).toEqual([]);
   });
 
   it('send: Telegram 403 marks the user as blocked, no throw, no log', async () => {
