@@ -11,6 +11,7 @@ import { haptics } from '@/telegram';
 import AulScene from './AulScene.vue';
 import { wearFrom, type BarysMood } from '@/shared/mascot/mascot';
 import DailyTasks from './DailyTasks.vue';
+import MyWordsLink from '@/features/lesson/MyWordsLink.vue';
 
 const router = useRouter();
 const toast = useToast();
@@ -104,6 +105,7 @@ const go = () => router.push('/lesson');
           <template v-else-if="mode === 'new'">Новых слов на сегодня: {{ home.new_left_today }}</template>
           <template v-else-if="mode === 'idle'">Следующие слова скоро вернутся на повтор</template>
         </p>
+        <MyWordsLink />
       </section>
 
       <h2 class="mx-4 mt-6 mb-2 text-title3">Твой аул</h2>

@@ -15,7 +15,7 @@ const router = useRouter();
 const lesson = useLessonStore();
 const q = useMyWords();
 
-const back = () => (window.history.state?.back ? router.back() : void router.push('/lesson'));
+const back = () => (window.history.state?.back ? router.back() : void router.push('/'));
 const hasTgBack = useBackButton(back);
 
 const GROUPS = [
@@ -38,20 +38,23 @@ function pick(w: MyWord) {
   sheetOpen.value = true;
 }
 
-function repeat() {
+const dueCount = computed(() => count('due'));
+
+/** «Повторить все»: сразу открывает повторение всех слов, которые пора повторить. */
+function repeat(onlyDue = dueCount.value > 0) {
   lesson.keepOnReturn = false;
-  void router.push('/lesson');
+  void router.push(onlyDue ? { path: '/lesson', query: { only: 'review' } } : '/lesson');
 }
 </script>
 
 <template>
-  <section class="mx-auto w-full max-w-[430px] pb-8" style="padding-bottom: calc(32px + var(--tg-safe-bottom))">
+  <section class="mx-auto w-full max-w-[430px]">
     <div class="grid h-11 grid-cols-[1fr_auto_1fr] items-center px-2">
       <button v-if="!hasTgBack" type="button" class="btn-plain justify-self-start px-2 text-body" @click="back">
         <svg width="12" height="20" viewBox="0 0 12 20" class="mr-1" aria-hidden="true">
           <path d="M10 2L2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
-        Урок
+        Назад
       </button>
       <span v-else />
       <h1 class="text-headline">Мои слова</h1>
@@ -77,10 +80,10 @@ function repeat() {
         <template v-if="q.data.value?.mastered">Все {{ wordsText(q.data.value.mastered) }} уже выучены. </template>
         Начни урок, и новые слова появятся здесь.
       </p>
-      <button type="button" class="btn btn-primary w-full" @click="repeat">Начать урок</button>
+      <button type="button" class="btn btn-primary w-full" @click="repeat(false)">Начать урок</button>
     </div>
 
-    <div v-else class="grid gap-5 px-4 pt-2">
+    <div v-else class="grid gap-5 px-4 pt-2" :class="dueCount ? '' : 'pb-8'">
       <dl class="grid grid-cols-4 rounded-card bg-surface py-3 text-center">
         <div class="flex flex-col-reverse gap-0.5">
           <dt class="text-caption1 text-label-2">повторить</dt>
@@ -126,8 +129,15 @@ function repeat() {
           </li>
         </ul>
         <p class="px-1 text-footnote text-label-3">{{ g.hint }}</p>
-        <button v-if="g.key === 'due'" type="button" class="btn btn-primary w-full" @click="repeat">Повторить сейчас</button>
       </section>
+    </div>
+
+    <div
+      v-if="dueCount"
+      class="sticky bottom-0 mt-4 bg-gradient-to-t from-canvas from-70% to-transparent px-4 pt-4"
+      style="padding-bottom: calc(12px + var(--tg-safe-bottom))"
+    >
+      <button type="button" class="btn btn-primary w-full" @click="repeat()">Повторить все · {{ wordsText(dueCount) }}</button>
     </div>
 
     <WordSheet v-model:open="sheetOpen" :word="picked" />

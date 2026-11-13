@@ -98,6 +98,8 @@ export type Home = z.infer<typeof HomeSchema>;
 // --- lesson ---
 export const LessonQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(12),
+  /** review — только слова, которые пора повторить, без новых */
+  only: z.enum(['review']).optional(),
 });
 
 export const LessonCardSchema = z.object({
