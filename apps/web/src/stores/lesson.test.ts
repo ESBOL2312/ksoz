@@ -69,7 +69,7 @@ describe('lesson practice round', () => {
     expect(l.stats.earned).toBe(0);
   });
 
-  it('returns a wrongly written word to the end of the round', async () => {
+  it('returns a word to the end of the round when «Вспомнил» was not pressed', async () => {
     lessonApi.mockResolvedValue({ cards: [newCard(1, 'ит', 'собака')] });
     const l = useLessonStore();
     await l.start();
@@ -79,7 +79,7 @@ describe('lesson practice round', () => {
     l.input = 'кот';
     await l.check();
     expect(l.result?.verdict).toBe('wrong');
-    l.next();
+    l.next(false);
     expect(l.stage).toBe('card');
     expect(l.card?.word_id).toBe(1);
 
@@ -95,6 +95,111 @@ describe('lesson practice round', () => {
     const l = useLessonStore();
     await l.start();
     await l.skipKnown();
+    expect(l.stage).toBe('done');
+  });
+
+  it('does not repeat a practice word after «Вспомнил», even if it was wrong', async () => {
+    lessonApi.mockResolvedValue({ cards: [newCard(1, 'ит', 'собака')] });
+    const l = useLessonStore();
+    await l.start();
+    await l.introduce();
+    l.beginPractice();
+    l.input = 'кот';
+    await l.check();
+    l.next(true);
+    expect(l.stage).toBe('done');
+  });
+});
+
+const reviewCard = (id: number, kk: string, ru: string) => ({
+  kind: 'review' as const,
+  word_id: id,
+  kk: null,
+  ru,
+  image_url: null,
+  audio_url: null,
+  examples: [],
+  phase: 'review' as const,
+  step: 0,
+  length: [...kk].length,
+});
+
+const reviewRes = (verdict: 'correct' | 'wrong', answer: string) => ({
+  verdict,
+  answer,
+  fix: [],
+  altyn: { base: 5, combo: 0, earned: verdict === 'correct' ? 5 : 0, lost: 0, balance: 100 },
+  next: { phase: 'review', step: 0, due_at: '2026-01-05T00:00:00Z' },
+  examples: [{ kk: `${answer} үлкен`, ru: 'пример' }],
+});
+
+describe('«Вспомнил» after a review', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    setActivePinia(createPinia());
+    lessonApi.mockResolvedValue({ cards: [reviewCard(1, 'ит', 'собака'), reviewCard(2, 'үй', 'дом')] });
+  });
+
+  it('offers the not remembered words again at the end of the lesson', async () => {
+    const l = useLessonStore();
+    await l.start();
+
+    review.mockResolvedValueOnce(reviewRes('correct', 'ит'));
+    l.input = 'ит';
+    await l.check();
+    l.next(true); // вспомнил
+
+    review.mockResolvedValueOnce(reviewRes('correct', 'үй'));
+    l.input = 'үй';
+    await l.check();
+    l.next(false); // угадал, но не вспомнил
+
+    expect(l.again.map((w) => w.kk)).toEqual(['үй']);
+    expect(l.stage).toBe('practice-intro');
+    l.beginPractice();
+    expect(l.cards.map((c) => c.word_id)).toEqual([2]);
+    expect(l.card?.examples).toHaveLength(1);
+
+    l.input = 'үй';
+    await l.check();
+    expect(l.result?.verdict).toBe('correct');
+    // SRS не трогаем: показываем, когда слово вернётся по ответу сервера
+    expect(l.result?.next.due_at).toBe('2026-01-05T00:00:00Z');
+    expect(review).toHaveBeenCalledTimes(2);
+    l.next(true);
+    expect(l.stage).toBe('done');
+  });
+
+  it('goes straight to the summary when every word was remembered', async () => {
+    const l = useLessonStore();
+    await l.start();
+    for (const kk of ['ит', 'үй']) {
+      review.mockResolvedValueOnce(reviewRes('correct', kk));
+      l.input = kk;
+      await l.check();
+      l.next(true);
+    }
+    expect(l.stage).toBe('done');
+  });
+
+  it('keeps asking at the end until «Вспомнил», but not forever', async () => {
+    lessonApi.mockResolvedValue({ cards: [reviewCard(1, 'ит', 'собака')] });
+    const l = useLessonStore();
+    await l.start();
+    review.mockResolvedValueOnce(reviewRes('wrong', 'ит'));
+    l.input = 'кот';
+    await l.check();
+    l.next(false);
+    l.beginPractice();
+    let shown = 0;
+    while (l.stage === 'card') {
+      shown++;
+      l.input = 'кот';
+      await l.check();
+      l.next(false);
+    }
+    expect(shown).toBe(3);
     expect(l.stage).toBe('done');
   });
 });

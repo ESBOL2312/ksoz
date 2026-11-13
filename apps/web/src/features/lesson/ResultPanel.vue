@@ -12,6 +12,11 @@ const fixPos = computed(() => new Set(res.value?.fix.map((f) => f.pos) ?? []));
 const mine = computed(() => [...lesson.lastInput]);
 const answer = computed(() => [...(res.value?.answer ?? '')]);
 
+/** Что будет, если не нажать «Вспомнил». */
+const againText = computed(() =>
+  lesson.round === 'practice' ? 'Не вспомнил — слово ещё раз попадётся в конце.' : 'Не вспомнил — слово ещё раз попадётся в конце урока.',
+);
+
 const TITLES = { correct: 'Дұрыс!', almost: 'Дерлік!', wrong: 'Қате' } as const;
 const MOODS = { correct: 'happy', almost: 'think', wrong: 'sad' } as const;
 const SUBTITLES = { correct: 'Верно, так держать', almost: 'Почти: есть опечатка', wrong: 'Посмотри, как правильно' } as const;
@@ -73,7 +78,7 @@ const SUBTITLES = { correct: 'Верно, так держать', almost: 'По�
       </article>
 
       <p v-if="lesson.round === 'practice' && res.verdict !== 'correct'" class="text-center text-footnote text-label-2">
-        Это тренировка, алтын не снимается. Слово ещё раз попадётся в конце закрепления.
+        Это тренировка, алтын не снимается.
       </p>
       <SrsLine :next="res.next" />
 
@@ -81,7 +86,11 @@ const SUBTITLES = { correct: 'Верно, так держать', almost: 'По�
         <p v-if="res.altyn.earned > 0" class="text-center text-footnote text-label-3">
           {{ res.altyn.base }} за слово + {{ res.altyn.combo }} за комбо
         </p>
-        <button type="button" class="btn btn-primary w-full" @click="lesson.next()">Дальше</button>
+        <p class="text-center text-footnote text-label-3">{{ againText }}</p>
+        <div class="grid grid-cols-2 gap-3">
+          <button type="button" class="btn btn-secondary" @click="lesson.next(false)">Не вспомнил</button>
+          <button type="button" class="btn btn-primary" @click="lesson.next(true)">Вспомнил</button>
+        </div>
       </div>
     </template>
   </div>

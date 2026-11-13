@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useQueryClient } from '@tanstack/vue-query';
-import { onBeforeUnmount, onMounted, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { invalidateAfterLesson, setBalance, useHome } from '@/api';
 import Art from '@/shared/art/Art.vue';
@@ -22,6 +22,16 @@ const route = useRoute();
 const reviewOnly = route.query.only === 'review';
 const begin = () => lesson.start(home.data.value?.combo ?? 0, reviewOnly ? 50 : 12, reviewOnly ? 'review' : undefined);
 const qc = useQueryClient();
+
+/** Что попало в закрепление: новые слова и повторы без «Вспомнил». */
+const practiceText = computed(() => {
+  const n = lesson.learned.length;
+  const m = lesson.again.length;
+  const tail = 'Напиши каждое по-казахски, так они лучше запомнятся.';
+  if (n && m) return `Ты взял в изучение ${words(n)} и не вспомнил ${words(m)}. ${tail}`;
+  if (m) return `Ты не вспомнил ${words(m)}. Попробуй написать их ещё раз по-казахски.`;
+  return `Ты взял в изучение ${words(n)}. ${tail}`;
+});
 const home = useHome();
 
 const close = () => void router.push('/');
@@ -87,9 +97,7 @@ watch(
       <div class="grid flex-1 content-center justify-items-center gap-3 text-center">
         <Barys mood="think" class="w-36" />
         <h1 class="text-title1">Теперь проверим</h1>
-        <p class="max-w-[19rem] text-body text-label-2">
-          Ты взял в изучение {{ words(lesson.learned.length) }}. Напиши каждое по-казахски, так они лучше запомнятся.
-        </p>
+        <p class="max-w-[19rem] text-body text-label-2">{{ practiceText }}</p>
         <p class="text-footnote text-label-3">Алтын за тренировку не начисляется.</p>
       </div>
       <div class="grid gap-2">
