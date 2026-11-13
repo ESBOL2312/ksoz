@@ -45,7 +45,18 @@ export interface LearnedWord {
   tries: number | null;
 }
 
-/** Сколько раз максимум слово вернётся в закрепление после ошибки. */
+/** Слово из основного раунда, которое пользователь не отметил «Вспомнил». */
+export interface AgainWord {
+  word_id: number;
+  kk: string;
+  ru: string;
+  /** когда слово вернётся по SRS — как ответил сервер */
+  next: ReviewResponse['next'];
+  /** примеры из ответа сервера: в карточке повтора их нет, чтобы не подсказать слово */
+  examples: ReviewResponse['examples'];
+}
+
+/** Сколько раз максимум слово вернётся в закрепление, если не вспомнил. */
 const PRACTICE_RETRIES = 2;
 
 function shuffle<T>(list: T[]): T[] {
@@ -93,6 +104,8 @@ export const useLessonStore = defineStore('lesson', () => {
   const learned = ref<LearnedWord[]>([]);
   /** новые слова, отмеченные «Уже знаю» в этом уроке */
   const known = ref<{ word_id: number; kk: string; ru: string }[]>([]);
+  /** повторы, на которых не нажал «Вспомнил»: предложим их ещё раз в конце урока */
+  const again = ref<AgainWord[]>([]);
   /**
    * Не начинать урок заново при возврате на страницу урока:
    * ставится при переходе с итога урока в «Мои слова», чтобы вернуться к итогу.
@@ -118,6 +131,7 @@ export const useLessonStore = defineStore('lesson', () => {
     round.value = 'main';
     learned.value = [];
     known.value = [];
+    again.value = [];
     tries.clear();
     try {
       await outbox.flush();
@@ -143,14 +157,24 @@ export const useLessonStore = defineStore('lesson', () => {
     stage.value = 'card';
   }
 
-  function next() {
-    // ошибка в закреплении: слово вернётся в конец раунда
+  /**
+   * Переход к следующей карточке. remembered — нажал ли пользователь «Вспомнил»
+   * после проверки. Если нет, слово ещё раз попадётся в конце урока
+   * (в закреплении) или в конце закрепления. Ответ, ушедший в очередь без сети,
+   * проверить на клиенте нечем, поэтому такое слово не повторяется.
+   */
+  function next(remembered = true) {
     const c = card.value;
-    if (round.value === 'practice' && c && result.value && result.value.verdict !== 'correct') {
-      if ((tries.get(c.word_id) ?? 0) <= PRACTICE_RETRIES) cards.value.push(c);
+    const res = result.value;
+    if (!remembered && c && res && c.kind === 'review') {
+      if (round.value === 'practice') {
+        if ((tries.get(c.word_id) ?? 0) <= PRACTICE_RETRIES) cards.value.push(c);
+      } else if (!again.value.some((w) => w.word_id === c.word_id)) {
+        again.value.push({ word_id: c.word_id, kk: res.answer, ru: c.ru, next: res.next, examples: res.examples });
+      }
     }
     if (index.value + 1 >= cards.value.length) {
-      if (round.value === 'main' && learned.value.length) {
+      if (round.value === 'main' && (learned.value.length || again.value.length)) {
         startPractice();
         return;
       }
@@ -163,19 +187,24 @@ export const useLessonStore = defineStore('lesson', () => {
   }
 
   /**
-   * Закрепление: сразу после знакомства пользователь пишет каждое новое слово
-   * по-казахски. Это тренировка без алтына и без изменений SRS: слово
-   * по-прежнему вернётся на первый повтор через 20 минут. Слово новой карточки
-   * уже известно клиенту, поэтому ответ проверяется здесь же.
+   * Закрепление: в конце урока пользователь ещё раз пишет по-казахски новые
+   * слова и повторы, на которых не нажал «Вспомнил». Это тренировка без алтына
+   * и без изменений SRS: слово вернётся тогда, когда решил сервер. Слова уже
+   * известны клиенту, поэтому ответ проверяется здесь же.
    */
   function startPractice() {
     const byId = new Map(cards.value.map((c) => [c.word_id, c]));
-    cards.value = shuffle(
-      learned.value
-        .map((w) => byId.get(w.word_id))
-        .filter((c): c is LessonCard => !!c)
-        .map((c) => ({ ...c, kind: 'review' as const, phase: 'learning' as const, step: 0 })),
-    );
+    const fresh = learned.value
+      .map((w) => byId.get(w.word_id))
+      .filter((c): c is LessonCard => !!c)
+      .map((c) => ({ ...c, kind: 'review' as const, phase: 'learning' as const, step: 0 }));
+    const repeat = again.value
+      .map((w): LessonCard | null => {
+        const c = byId.get(w.word_id);
+        return c ? { ...c, kk: w.kk, length: [...w.kk].length, examples: w.examples } : null;
+      })
+      .filter((c): c is LessonCard => !!c);
+    cards.value = shuffle([...fresh, ...repeat]);
     round.value = 'practice';
     index.value = 0;
     result.value = null;
@@ -308,6 +337,7 @@ export const useLessonStore = defineStore('lesson', () => {
   function checkPractice(c: LessonCard, text: string) {
     const kk = c.kk ?? '';
     const w = learned.value.find((l) => l.word_id === c.word_id);
+    const a = again.value.find((l) => l.word_id === c.word_id);
     const attempt = (tries.get(c.word_id) ?? 0) + 1;
     tries.set(c.word_id, attempt);
     error.value = null;
@@ -326,7 +356,7 @@ export const useLessonStore = defineStore('lesson', () => {
       answer: kk,
       fix: res.fix,
       altyn: { base: 0, combo: 0, earned: 0, lost: 0, balance: balance.value ?? 0 },
-      next: {
+      next: a?.next ?? {
         phase: 'learning',
         step: 0,
         due_at: w?.due_at ?? new Date(Date.now() + LEARNING_STEPS_MS[0]).toISOString(),
@@ -344,6 +374,7 @@ export const useLessonStore = defineStore('lesson', () => {
     round.value = 'main';
     learned.value = [];
     known.value = [];
+    again.value = [];
     tries.clear();
   }
 
@@ -365,6 +396,7 @@ export const useLessonStore = defineStore('lesson', () => {
     round,
     learned,
     known,
+    again,
     card,
     total,
     progress,
