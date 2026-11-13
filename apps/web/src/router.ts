@@ -6,6 +6,7 @@ export const router = createRouter({
   routes: [
     { path: '/', name: 'aul', component: () => import('@/features/aul/AulView.vue'), meta: { tabs: true } },
     { path: '/lesson', name: 'lesson', component: () => import('@/features/lesson/LessonView.vue') },
+    { path: '/words', name: 'words', component: () => import('@/features/words/MyWordsView.vue') },
     { path: '/bazaar', name: 'bazaar', component: () => import('@/features/bazaar/BazaarView.vue'), meta: { tabs: true } },
     { path: '/baige', name: 'baige', component: () => import('@/features/baige/BaigeView.vue'), meta: { tabs: true } },
     { path: '/profile', name: 'profile', component: () => import('@/features/profile/ProfileView.vue') },

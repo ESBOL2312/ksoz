@@ -5,6 +5,7 @@ import Art from '@/shared/art/Art.vue';
 import Barys from '@/shared/mascot/Barys.vue';
 import { num, words } from '@/shared/format';
 import { useLessonStore } from '@/stores/lesson';
+import MyWordsLink from './MyWordsLink.vue';
 
 const lesson = useLessonStore();
 const router = useRouter();
@@ -61,6 +62,8 @@ const triesText = (t: number | null) => (t == null ? 'повторим' : t === 
       </ul>
       <p class="text-footnote text-label-3">Первый повтор через 20 минут, потом через 1, 2 и 5 часов.</p>
     </section>
+
+    <MyWordsLink />
 
     <details v-if="lesson.known.length" class="rounded-card bg-surface px-4 py-3">
       <summary class="flex min-h-6 cursor-pointer items-center text-body text-label-2">Уже знал: {{ words(lesson.known.length) }}</summary>

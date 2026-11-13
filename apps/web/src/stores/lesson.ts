@@ -90,6 +90,11 @@ export const useLessonStore = defineStore('lesson', () => {
   const learned = ref<LearnedWord[]>([]);
   /** новые слова, отмеченные «Уже знаю» в этом уроке */
   const known = ref<{ word_id: number; kk: string; ru: string }[]>([]);
+  /**
+   * Не начинать урок заново при возврате на страницу урока:
+   * ставится при переходе с итога урока в «Мои слова», чтобы вернуться к итогу.
+   */
+  const keepOnReturn = ref(false);
   /** попытки по словам в закреплении */
   const tries = new Map<number, number>();
 
@@ -339,6 +344,7 @@ export const useLessonStore = defineStore('lesson', () => {
   }
 
   return {
+    keepOnReturn,
     stage,
     cards,
     index,

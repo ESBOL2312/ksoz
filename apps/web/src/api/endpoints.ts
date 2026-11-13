@@ -4,6 +4,8 @@ import type {
   Home,
   Lesson,
   Me,
+  MyWord,
+  MyWords,
   PatchMeBody,
   Purchase,
   ReviewBody,
@@ -37,7 +39,7 @@ export type TaskClaim = z.infer<typeof TaskClaimResponseSchema>;
 export type Topics = z.infer<typeof TopicsResponseSchema>;
 export type Words = z.infer<typeof WordsResponseSchema>;
 export type BaigeScope = Baige['scope'];
-export type { Baige, City, Home, Lesson, Me, PatchMeBody, Purchase, ReviewBody, ReviewResponse };
+export type { Baige, City, Home, Lesson, Me, MyWord, MyWords, PatchMeBody, Purchase, ReviewBody, ReviewResponse };
 
 const data = <T>(p: Promise<{ data: T }>) => p.then((r) => r.data);
 
@@ -52,6 +54,7 @@ export const api = {
     data(http.post<HintResponse>('/v1/lesson/hint', { word_id, hints_used })),
   review: (body: ReviewBody) => data(http.post<ReviewResponse>('/v1/reviews', body)),
   words: (params: { level?: string; topic?: string } = {}) => data(http.get<Words>('/v1/words', { params })),
+  myWords: () => data(http.get<MyWords>('/v1/my-words')),
   topics: () => data(http.get<Topics>('/v1/topics')),
   cities: () => data(http.get<{ cities: City[] }>('/v1/cities')),
   bazaar: () => data(http.get<Bazaar>('/v1/bazaar')),

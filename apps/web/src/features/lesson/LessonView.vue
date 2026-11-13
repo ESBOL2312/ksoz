@@ -10,6 +10,7 @@ import { getWebApp, supports, useBackButton } from '@/telegram';
 import { useLessonStore } from '@/stores/lesson';
 import IntroCard from './IntroCard.vue';
 import LessonDone from './LessonDone.vue';
+import MyWordsLink from './MyWordsLink.vue';
 import QuizCard from './QuizCard.vue';
 import ResultPanel from './ResultPanel.vue';
 
@@ -23,7 +24,10 @@ useBackButton(close);
 
 onMounted(() => {
   if (supports('7.7')) getWebApp()?.disableVerticalSwipes?.();
-  void lesson.start(home.data.value?.combo ?? 0);
+  // вернулись из «Моих слов» на итог урока: показываем его, а не новый урок
+  const keep = lesson.keepOnReturn && (lesson.stage === 'done' || lesson.stage === 'empty');
+  lesson.keepOnReturn = false;
+  if (!keep) void lesson.start(home.data.value?.combo ?? 0);
 });
 onBeforeUnmount(() => {
   if (supports('7.7')) getWebApp()?.enableVerticalSwipes?.();
@@ -98,7 +102,10 @@ watch(
         <h1 class="text-title1">Всё повторено</h1>
         <p class="max-w-[18rem] text-body text-label-2">Сейчас нечего повторять. Загляни позже, слова скоро вернутся.</p>
       </div>
-      <button type="button" class="btn btn-primary w-full" @click="close">В аул</button>
+      <div class="grid gap-3">
+        <MyWordsLink />
+        <button type="button" class="btn btn-primary w-full" @click="close">В аул</button>
+      </div>
     </div>
 
     <div v-else-if="lesson.stage === 'error'" class="flex flex-1 flex-col">

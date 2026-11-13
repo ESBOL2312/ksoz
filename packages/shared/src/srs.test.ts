@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { initialState, knownState, previewNext, quality, schedule, KNOWN_INTERVAL_DAYS, LEARNING_STEPS_MS } from './srs.js';
+import { initialState, knownState, previewNext, quality, schedule, KNOWN_INTERVAL_DAYS, LEARNING_STEPS_MS, MASTERED_INTERVAL_DAYS, wordGroup } from './srs.js';
 
 const now = new Date('2026-10-29T10:00:00Z');
 const MIN = 60_000;
@@ -70,5 +70,17 @@ describe('srs', () => {
     const p = previewNext(s, 'correct', now);
     expect(p.next).toEqual(schedule(s, 'correct', now));
     expect(p.inMs).toBe(60 * MIN);
+  });
+});
+
+describe('wordGroup', () => {
+  const now = new Date('2026-01-10T12:00:00Z');
+  const later = new Date(now.getTime() + 3_600_000);
+  it('splits words into due / learning / review / mastered', () => {
+    expect(wordGroup({ phase: 'learning', intervalDays: 0, dueAt: now }, now)).toBe('due');
+    expect(wordGroup({ phase: 'learning', intervalDays: 0, dueAt: later }, now)).toBe('learning');
+    expect(wordGroup({ phase: 'review', intervalDays: 20, dueAt: later }, now)).toBe('review');
+    expect(wordGroup({ phase: 'review', intervalDays: 20, dueAt: now }, now)).toBe('due');
+    expect(wordGroup({ phase: 'review', intervalDays: MASTERED_INTERVAL_DAYS, dueAt: now }, now)).toBe('mastered');
   });
 });
