@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeReward } from './altyn.js';
+import { computePenalty, computeReward } from './altyn.js';
 
 describe('altyn', () => {
   it('correct, no combo', () => {
@@ -19,5 +19,12 @@ describe('altyn', () => {
   });
   it('wrong resets combo', () => {
     expect(computeReward('wrong', 0, 7)).toEqual({ base: 0, comboBonus: 0, earned: 0, nextCombo: 0 });
+  });
+  it('wrong costs 5, never below zero', () => {
+    expect(computePenalty('wrong', 100)).toBe(5);
+    expect(computePenalty('wrong', 3)).toBe(3);
+    expect(computePenalty('wrong', 0)).toBe(0);
+    expect(computePenalty('almost', 100)).toBe(0);
+    expect(computePenalty('correct', 100)).toBe(0);
   });
 });

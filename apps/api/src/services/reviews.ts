@@ -1,5 +1,6 @@
 import {
   checkAnswer,
+  computePenalty,
   computeReward,
   localDay,
   schedule,
@@ -60,6 +61,8 @@ export async function submitReview(
       };
       const after = schedule(before, check.verdict, now, body.hints);
       const reward = computeReward(check.verdict, body.hints, user.combo);
+      // штраф за ошибку; user заблокирован FOR UPDATE, так что баланс актуален и в минус не уйдёт
+      const lost = computePenalty(check.verdict, user.altyn);
 
       const [review] = await tx
         .insert(reviews)
@@ -74,7 +77,7 @@ export async function submitReview(
           stepBefore: uw.step,
           dueBefore: uw.dueAt,
           dueAfter: after.dueAt,
-          altyn: reward.earned,
+          altyn: reward.earned - lost,
           createdAt: now,
         })
         .returning({ id: reviews.id });
@@ -82,6 +85,8 @@ export async function submitReview(
       let balance = user.altyn;
       if (reward.earned > 0) {
         balance = (await applyAltyn(tx, userId, reward.earned, 'review', review!.id, now)).balance;
+      } else if (lost > 0) {
+        balance = (await applyAltyn(tx, userId, -lost, 'review', review!.id, now)).balance;
       }
 
       await tx
@@ -114,7 +119,7 @@ export async function submitReview(
         verdict: check.verdict,
         answer: word.kk,
         fix: check.fix,
-        altyn: { base: reward.base, combo: reward.comboBonus, earned: reward.earned, balance },
+        altyn: { base: reward.base, combo: reward.comboBonus, earned: reward.earned, lost, balance },
         next: { phase: after.phase, step: after.step, due_at: after.dueAt.toISOString() },
         examples,
       };

@@ -41,6 +41,9 @@ const SUBTITLES = { correct: 'Верно, так держать', almost: 'По�
           <span v-if="res.altyn.earned > 0" class="inline-flex h-8 items-center gap-1.5 justify-self-start rounded-full bg-surface pr-3 pl-1.5 text-subhead font-semibold">
             <Art name="coin" class="size-[22px]" />+{{ res.altyn.earned }} алтын
           </span>
+          <span v-else-if="res.altyn.lost > 0" class="inline-flex h-8 items-center gap-1.5 justify-self-start rounded-full bg-surface pr-3 pl-1.5 text-subhead font-semibold text-danger">
+            <Art name="coin" class="size-[22px] opacity-60" />−{{ res.altyn.lost }} алтын
+          </span>
         </div>
       </div>
 

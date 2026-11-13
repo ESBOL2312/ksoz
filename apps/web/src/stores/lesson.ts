@@ -26,6 +26,8 @@ export interface LessonStats {
   /** новые слова, отмеченные «Уже знаю» */
   skipped: number;
   earned: number;
+  /** снято за ошибки */
+  lost: number;
   bestCombo: number;
 }
 
@@ -63,6 +65,7 @@ const emptyStats = (): LessonStats => ({
   introduced: 0,
   skipped: 0,
   earned: 0,
+  lost: 0,
   bestCombo: 0,
 });
 
@@ -275,6 +278,7 @@ export const useLessonStore = defineStore('lesson', () => {
         result.value = res;
         balance.value = res.altyn.balance;
         stats.value.earned += res.altyn.earned;
+        stats.value.lost += res.altyn.lost ?? 0;
         if (res.verdict === 'correct') {
           stats.value.correct++;
           combo.value++;
@@ -321,7 +325,7 @@ export const useLessonStore = defineStore('lesson', () => {
       verdict: res.verdict,
       answer: kk,
       fix: res.fix,
-      altyn: { base: 0, combo: 0, earned: 0, balance: balance.value ?? 0 },
+      altyn: { base: 0, combo: 0, earned: 0, lost: 0, balance: balance.value ?? 0 },
       next: {
         phase: 'learning',
         step: 0,

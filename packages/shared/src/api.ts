@@ -150,6 +150,8 @@ export const ReviewResponseSchema = z.object({
     base: z.number().int(),
     combo: z.number().int(),
     earned: z.number().int(),
+    /** сколько снято за ошибку (0, если ответ верный или баланс пуст) */
+    lost: z.number().int().min(0).default(0),
     balance: z.number().int(),
   }),
   next: NextStateSchema,
