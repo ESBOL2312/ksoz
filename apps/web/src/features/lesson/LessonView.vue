@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useQueryClient } from '@tanstack/vue-query';
 import { onBeforeUnmount, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { invalidateAfterLesson, setBalance, useHome } from '@/api';
 import Art from '@/shared/art/Art.vue';
 import Barys from '@/shared/mascot/Barys.vue';
@@ -16,6 +16,11 @@ import ResultPanel from './ResultPanel.vue';
 
 const lesson = useLessonStore();
 const router = useRouter();
+const route = useRoute();
+
+/** /lesson?only=review — «Повторить все» из «Моих слов»: все слова, которые пора повторить, без новых. */
+const reviewOnly = route.query.only === 'review';
+const begin = () => lesson.start(home.data.value?.combo ?? 0, reviewOnly ? 50 : 12, reviewOnly ? 'review' : undefined);
 const qc = useQueryClient();
 const home = useHome();
 
@@ -27,7 +32,7 @@ onMounted(() => {
   // вернулись из «Моих слов» на итог урока: показываем его, а не новый урок
   const keep = lesson.keepOnReturn && (lesson.stage === 'done' || lesson.stage === 'empty');
   lesson.keepOnReturn = false;
-  if (!keep) void lesson.start(home.data.value?.combo ?? 0);
+  if (!keep) void begin();
 });
 onBeforeUnmount(() => {
   if (supports('7.7')) getWebApp()?.enableVerticalSwipes?.();
@@ -115,7 +120,7 @@ watch(
         <p class="max-w-[18rem] text-body text-label-2">Проверь интернет и попробуй ещё раз.</p>
       </div>
       <div class="grid gap-3">
-        <button type="button" class="btn btn-primary w-full" @click="lesson.start(home.data.value?.combo ?? 0)">Повторить</button>
+        <button type="button" class="btn btn-primary w-full" @click="begin()">Повторить</button>
         <button type="button" class="btn btn-secondary w-full" @click="close">В аул</button>
       </div>
     </div>

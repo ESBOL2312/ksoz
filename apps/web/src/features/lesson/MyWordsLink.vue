@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useMyWords } from '@/api';
 import { words } from '@/shared/format';
 import { useLessonStore } from '@/stores/lesson';
 
 /** Строка-переход со страницы урока на экран «Мои слова». */
 const router = useRouter();
+const route = useRoute();
 const lesson = useLessonStore();
 const q = useMyWords();
 
@@ -14,7 +15,8 @@ const total = computed(() => q.data.value?.words.length ?? null);
 const due = computed(() => q.data.value?.words.filter((w) => w.group === 'due').length ?? 0);
 
 function open() {
-  lesson.keepOnReturn = true;
+  // с итога урока возвращаемся к итогу; из аула — ничего не держим
+  lesson.keepOnReturn = route.name === 'lesson';
   void router.push('/words');
 }
 </script>

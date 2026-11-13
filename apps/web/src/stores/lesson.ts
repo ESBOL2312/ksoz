@@ -104,7 +104,7 @@ export const useLessonStore = defineStore('lesson', () => {
   const progress = computed(() => (total.value ? Math.min(1, index.value / total.value) : 0));
 
   /** Начинает урок: сначала досылает очередь, потом берёт карточки. startCombo — combo из home. */
-  async function start(startCombo = 0, limit = 12) {
+  async function start(startCombo = 0, limit = 12, only?: 'review') {
     stage.value = 'loading';
     error.value = null;
     stats.value = emptyStats();
@@ -118,7 +118,7 @@ export const useLessonStore = defineStore('lesson', () => {
     tries.clear();
     try {
       await outbox.flush();
-      const lesson = await api.lesson(limit);
+      const lesson = await api.lesson(limit, only);
       cards.value = lesson.cards;
       if (!lesson.cards.length) {
         stage.value = 'empty';

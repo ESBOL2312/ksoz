@@ -30,7 +30,7 @@ export const learningRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get('/v1/home', { schema: { response: { 200: HomeSchema } } }, (req) => getHome(app.db, req.user.row));
 
   app.get('/v1/lesson', { schema: { querystring: LessonQuerySchema, response: { 200: LessonSchema } } }, (req) =>
-    getLesson(app.db, req.user.row, req.query.limit),
+    getLesson(app.db, req.user.row, req.query.limit, new Date(), req.query.only === 'review'),
   );
 
   app.post(

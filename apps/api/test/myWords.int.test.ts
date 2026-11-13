@@ -60,4 +60,15 @@ describe.skipIf(!hasTestDb)('GET /v1/my-words', () => {
     const res = await client(app, 32).get('/v1/my-words');
     expect(res.json()).toEqual({ words: [], mastered: 0 });
   });
+
+  it('GET /v1/lesson?only=review returns due words without new ones', async () => {
+    const c = client(app, 33);
+    const su = await wordId(app, 'Су');
+    await c.post('/v1/lesson/introduce', { word_id: su });
+    await app.db.update(userWords).set({ dueAt: new Date(Date.now() - 60_000) }).where(eq(userWords.wordId, su));
+    const all = (await c.get('/v1/lesson?limit=5')).json().cards;
+    expect(all.length).toBeGreaterThan(1);
+    const only = (await c.get('/v1/lesson?limit=50&only=review')).json().cards;
+    expect(only.map((x: any) => [x.word_id, x.kind])).toEqual([[su, 'review']]);
+  });
 });

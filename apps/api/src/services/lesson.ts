@@ -52,7 +52,13 @@ export async function examplesFor(q: Q, wordIds: number[]) {
   return map;
 }
 
-export async function getLesson(db: Db, user: UserRow, limit: number, now = new Date()): Promise<Lesson> {
+export async function getLesson(
+  db: Db,
+  user: UserRow,
+  limit: number,
+  now = new Date(),
+  reviewOnly = false,
+): Promise<Lesson> {
   const due = await db
     .select({
       wordId: words.id,
@@ -69,7 +75,7 @@ export async function getLesson(db: Db, user: UserRow, limit: number, now = new 
     .orderBy(asc(userWords.dueAt), asc(words.id))
     .limit(limit);
 
-  const room = Math.min(limit - due.length, await newLeftToday(db, user, now));
+  const room = reviewOnly ? 0 : Math.min(limit - due.length, await newLeftToday(db, user, now));
   const fresh =
     room > 0
       ? await db
