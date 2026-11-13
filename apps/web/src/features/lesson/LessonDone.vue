@@ -27,6 +27,7 @@ const triesText = (t: number | null) => (t == null ? 'повторим' : t === 
       <span class="mt-1 inline-flex h-9 items-center gap-1.5 rounded-full bg-surface pr-3.5 pl-2 text-headline">
         <Art name="coin" class="size-6" />+{{ num(lesson.stats.earned) }} алтын
       </span>
+      <span v-if="lesson.stats.lost > 0" class="text-footnote text-danger">−{{ num(lesson.stats.lost) }} за ошибки</span>
     </div>
 
     <dl v-if="hadReviews || !lesson.learned.length" class="grid grid-cols-3 rounded-card bg-surface py-3 text-center">

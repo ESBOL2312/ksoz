@@ -66,16 +66,35 @@ describe.skipIf(!hasTestDb)('POST /v1/reviews', () => {
     expect((await user(21)).combo).toBe(4);
   });
 
-  it('wrong: no altyn, combo reset, step back to 0', async () => {
+  it('wrong: costs 5 altyn, combo reset, step back to 0', async () => {
     const c = client(app, 22);
     const id = await learn(c, 'Әке');
     await c.review(id, 'әке');
     await c.review(id, 'әке');
     expect((await uw(22, id)).step).toBe(2);
     const res = (await c.review(id, 'бала')).json();
-    expect(res).toMatchObject({ verdict: 'wrong', fix: [], altyn: { earned: 0, balance: 21 }, next: { step: 0 } });
+    expect(res).toMatchObject({ verdict: 'wrong', fix: [], altyn: { earned: 0, lost: 5, balance: 16 }, next: { step: 0 } });
     expect((await user(22)).combo).toBe(0);
-    expect(await app.db.select().from(altynLedger)).toHaveLength(2); // wrong не пишет в журнал
+    expect((await user(22)).altyn).toBe(16);
+    const ledger = await app.db.select().from(altynLedger);
+    expect(ledger).toHaveLength(3);
+    expect(ledger.at(-1)).toMatchObject({ delta: -5, reason: 'review' });
+    const [ws] = await app.db.select().from(weeklyScores);
+    expect(ws?.score).toBe(21); // штраф не уменьшает очки недели
+    const [last] = await app.db.select().from(reviews).where(eq(reviews.verdict, 'wrong'));
+    expect(last?.altyn).toBe(-5);
+  });
+
+  it('wrong never takes the balance below zero', async () => {
+    const c = client(app, 31);
+    const id = await learn(c, 'Әке');
+    await setUser(app, 31, { altyn: 3 });
+    const partial = (await c.review(id, 'бала')).json();
+    expect(partial.altyn).toMatchObject({ earned: 0, lost: 3, balance: 0 });
+    const empty = (await c.review(id, 'бала')).json();
+    expect(empty.altyn).toMatchObject({ earned: 0, lost: 0, balance: 0 });
+    expect((await user(31)).altyn).toBe(0);
+    expect(await app.db.select().from(altynLedger)).toHaveLength(1); // нулевой штраф не пишется
   });
 
   it('hints reduce the reward', async () => {

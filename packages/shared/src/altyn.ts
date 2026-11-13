@@ -7,6 +7,8 @@ export const ALTYN = {
   HINT_PENALTY: 0.3,
   ALMOST_FACTOR: 0.5,
   NEW_PER_DAY: 10,
+  /** штраф за неверный ответ (половина базовой награды) */
+  WRONG_PENALTY: 5,
 } as const;
 
 export interface Reward {
@@ -18,6 +20,12 @@ export interface Reward {
 
 export function comboMultiplier(combo: number): number {
   return 1 + ALTYN.COMBO_STEP * Math.min(combo, ALTYN.COMBO_CAP);
+}
+
+/** Сколько алтына снять за ответ: только за «wrong», не больше баланса (в минус не уходим). */
+export function computePenalty(verdict: Verdict, balance: number): number {
+  if (verdict !== 'wrong') return 0;
+  return Math.min(ALTYN.WRONG_PENALTY, Math.max(0, balance));
 }
 
 /** `combo` — серия верных ответов до этого ответа. */
