@@ -12,6 +12,8 @@ export const useBazaar = () => useQuery({ queryKey: qk.bazaar, queryFn: api.baza
 export const useMyWords = () => useQuery({ queryKey: qk.myWords, queryFn: api.myWords });
 export const useTopics = () => useQuery({ queryKey: qk.topics, queryFn: api.topics, staleTime: HOUR });
 export const useCities = () => useQuery({ queryKey: qk.cities, queryFn: api.cities, staleTime: HOUR });
+/** Квесты и прогресс по шагам: сбрасывается после шага квеста и после урока. */
+export const useQuests = () => useQuery({ queryKey: qk.quests, queryFn: api.quests });
 export const useInvite = () => useQuery({ queryKey: qk.invite, queryFn: api.invite, staleTime: Infinity });
 
 export function useBaige(scope: MaybeRefOrGetter<BaigeScope>) {

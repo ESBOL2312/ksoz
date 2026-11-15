@@ -22,6 +22,13 @@ function isUniqueViolation(e: unknown): boolean {
   return err?.code === '23505' || err?.cause?.code === '23505';
 }
 
+/** Половина награды (вниз): base и combo делятся так, чтобы base + combo = earned. */
+function halfReward<T extends { base: number; comboBonus: number; earned: number }>(r: T): T {
+  const earned = Math.floor(r.earned / 2);
+  const base = Math.min(earned, Math.floor(r.base / 2));
+  return { ...r, base, comboBonus: earned - base, earned };
+}
+
 export async function submitReview(
   db: Db,
   userId: number,
@@ -60,9 +67,12 @@ export async function submitReview(
         dueAt: uw.dueAt,
       };
       const after = schedule(before, check.verdict, now, body.hints);
-      const reward = computeReward(check.verdict, body.hints, user.combo);
+      const full = computeReward(check.verdict, body.hints, user.combo);
+      // выбор карточкой (квесты) легче печати: половина награды и без штрафа за ошибку
+      const choice = body.mode === 'choice';
+      const reward = choice ? halfReward(full) : full;
       // штраф за ошибку; user заблокирован FOR UPDATE, так что баланс актуален и в минус не уйдёт
-      const lost = computePenalty(check.verdict, user.altyn);
+      const lost = choice ? 0 : computePenalty(check.verdict, user.altyn);
 
       const [review] = await tx
         .insert(reviews)

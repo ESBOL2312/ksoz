@@ -36,7 +36,7 @@ export const learningRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post(
     '/v1/lesson/introduce',
     { schema: { body: IntroduceBodySchema, response: { 200: IntroduceResponseSchema } } },
-    (req) => introduceWord(app.db, req.user.row, req.body.word_id),
+    (req) => introduceWord(app.db, req.user.row, req.body.word_id, req.body.source),
   );
 
   app.post(

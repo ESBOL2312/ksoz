@@ -1,4 +1,5 @@
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
+import { QUESTS } from '../quests/content.js';
 import type { Db } from './client.js';
 import { PROTOTYPE_WORDS } from './prototype-words.js';
 import { CITIES, EXTRA_WORDS, ITEMS, TOPICS } from './seed-data.js';
@@ -22,6 +23,19 @@ export async function seed(db: Db): Promise<void> {
       .values(all.map((w) => ({ kk: w.kk, ru: w.ru, level: w.level, status: 'published' as const })))
       .onConflictDoNothing({ target: words.kk });
 
+    // слова и фразы квестов: те же words по kk (часть уже есть из прототипа)
+    const questItems = QUESTS.flatMap((q) => q.steps.flatMap((s) => s.items));
+    if (questItems.length) {
+      await tx
+        .insert(words)
+        .values(
+          questItems.map((w) => ({ kk: w.kk, ru: w.ru, level: 'A1' as const, status: 'published' as const, kind: w.kind })),
+        )
+        .onConflictDoNothing({ target: words.kk });
+      const phrases = questItems.filter((w) => w.kind === 'phrase').map((w) => w.kk);
+      if (phrases.length) await tx.update(words).set({ kind: 'phrase' }).where(inArray(words.kk, phrases));
+    }
+
     const byKk = new Map(
       (await tx.select({ id: words.id, kk: words.kk }).from(words)).map((w) => [w.kk, w.id]),
     );
@@ -34,6 +48,13 @@ export async function seed(db: Db): Promise<void> {
       const ex = parseExample(w.example);
       return ex && !withExamples.has(id) ? [{ wordId: id, ...ex, position: 0 }] : [];
     });
+    for (const w of questItems) {
+      const id = byKk.get(w.kk)!;
+      const ex = w.example ? parseExample(w.example) : null;
+      if (ex && !withExamples.has(id) && !exampleRows.some((r) => r.wordId === id)) {
+        exampleRows.push({ wordId: id, ...ex, position: 0 });
+      }
+    }
     if (exampleRows.length) await tx.insert(wordExamples).values(exampleRows);
 
     await tx.insert(cities).values([...CITIES]).onConflictDoNothing({ target: cities.nameKk });

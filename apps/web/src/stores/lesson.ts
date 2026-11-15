@@ -302,6 +302,8 @@ export const useLessonStore = defineStore('lesson', () => {
         input: text,
         hints: hints.value,
         ms: Math.min(3_600_000, Date.now() - shownAt.value),
+        // слова квестов повторяются выбором карточки
+        mode: c.options?.length ? 'choice' : 'type',
       });
       if (res) {
         result.value = res;
@@ -331,6 +333,15 @@ export const useLessonStore = defineStore('lesson', () => {
     } finally {
       busy.value = false;
     }
+  }
+
+  /** Ответ карточкой (у карточки есть options): выбранное слово уходит как ответ. */
+  async function choose(option: string) {
+    const c = card.value;
+    if (!c?.options?.length || busy.value || stage.value !== 'card') return;
+    input.value = option;
+    haptics.select();
+    await check();
   }
 
   /** Ответ в закреплении: проверка на клиенте, без алтына и без SRS. */
@@ -408,6 +419,7 @@ export const useLessonStore = defineStore('lesson', () => {
     skipKnown,
     hint,
     check,
+    choose,
     reset,
   };
 });

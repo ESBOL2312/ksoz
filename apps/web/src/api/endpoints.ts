@@ -8,6 +8,9 @@ import type {
   MyWords,
   PatchMeBody,
   Purchase,
+  QuestsResponse,
+  QuestStep,
+  QuestStepCompleteResponse,
   ReviewBody,
   ReviewResponse,
 } from '@ksoz/shared';
@@ -40,6 +43,10 @@ export type Topics = z.infer<typeof TopicsResponseSchema>;
 export type Words = z.infer<typeof WordsResponseSchema>;
 export type BaigeScope = Baige['scope'];
 export type { Baige, City, Home, Lesson, Me, MyWord, MyWords, PatchMeBody, Purchase, ReviewBody, ReviewResponse };
+export type { QuestsResponse, QuestStep, QuestStepCompleteResponse };
+/** Откуда слово взято в изучение (лимит новых слов в день общий). */
+export type IntroduceSource = 'lesson' | 'quest';
+const questPath = (slug: string, n: number) => `/v1/quests/${encodeURIComponent(slug)}/steps/${n}`;
 
 const data = <T>(p: Promise<{ data: T }>) => p.then((r) => r.data);
 
@@ -48,7 +55,8 @@ export const api = {
   patchMe: (body: PatchMeBody) => data(http.patch<Me>('/v1/me', body)),
   home: () => data(http.get<Home>('/v1/home')),
   lesson: (limit = 12, only?: 'review') => data(http.get<Lesson>('/v1/lesson', { params: { limit, only } })),
-  introduce: (word_id: number) => data(http.post<IntroduceResponse>('/v1/lesson/introduce', { word_id })),
+  introduce: (word_id: number, source?: IntroduceSource) =>
+    data(http.post<IntroduceResponse>('/v1/lesson/introduce', source ? { word_id, source } : { word_id })),
   known: (word_id: number) => data(http.post<IntroduceResponse>('/v1/lesson/known', { word_id })),
   hint: (word_id: number, hints_used: number) =>
     data(http.post<HintResponse>('/v1/lesson/hint', { word_id, hints_used })),
@@ -65,4 +73,7 @@ export const api = {
   importLocal: (body: ImportLocalBody) => data(http.post<ImportLocalResponse>('/v1/import/local', body)),
   baige: (scope: BaigeScope) => data(http.get<Baige>('/v1/baige', { params: { scope } })),
   invite: () => data(http.get<Invite>('/v1/invite')),
+  quests: () => data(http.get<QuestsResponse>('/v1/quests')),
+  questStep: (slug: string, n: number) => data(http.get<QuestStep>(questPath(slug, n))),
+  questComplete: (slug: string, n: number) => data(http.post<QuestStepCompleteResponse>(`${questPath(slug, n)}/complete`, {})),
 };

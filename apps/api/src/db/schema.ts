@@ -26,9 +26,11 @@ export const levelEnum = pgEnum('level', ['A1', 'A2', 'B1', 'B2']);
 export const wordStatusEnum = pgEnum('word_status', ['draft', 'reviewed', 'published']);
 export const categoryEnum = pgEnum('item_category', ['kiim', 'uy', 'mal', 'aspap']);
 export const phaseEnum = pgEnum('srs_phase', ['learning', 'review']);
-export const sourceEnum = pgEnum('word_source', ['lesson', 'bazaar', 'known']);
+export const sourceEnum = pgEnum('word_source', ['lesson', 'bazaar', 'known', 'quest']);
 export const verdictEnum = pgEnum('verdict', ['correct', 'almost', 'wrong']);
-export const ledgerReasonEnum = pgEnum('ledger_reason', ['review', 'task', 'purchase', 'prize']);
+export const ledgerReasonEnum = pgEnum('ledger_reason', ['review', 'task', 'purchase', 'prize', 'quest']);
+/** phrase — готовая фраза из квеста: в обычном уроке как новое слово не показывается */
+export const wordKindEnum = pgEnum('word_kind', ['word', 'phrase']);
 
 // --- словарь ---
 export const words = pgTable(
@@ -43,6 +45,7 @@ export const words = pgTable(
     imageUrl: text('image_url'),
     audioUrl: text('audio_url'),
     status: wordStatusEnum('status').notNull().default('draft'),
+    kind: wordKindEnum('kind').notNull().default('word'),
   },
   (t) => [unique('words_kk_unique').on(t.kk), index('words_level_status_idx').on(t.level, t.status)],
 );
@@ -275,6 +278,22 @@ export const notificationLog = pgTable(
     sentAt: ts('sent_at').notNull().defaultNow(),
   },
   (t) => [index('notification_log_user_kind_idx').on(t.userId, t.kind, t.sentAt)],
+);
+
+// --- квесты ---
+/** Прогресс пользователя в квесте (контент квестов — в src/quests/content.ts). Нет строки — 0 шагов. */
+export const userQuests = pgTable(
+  'user_quests',
+  {
+    userId: tgId('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    questSlug: text('quest_slug').notNull(),
+    stepsDone: integer('steps_done').notNull().default(0),
+    startedAt: ts('started_at').notNull().defaultNow(),
+    completedAt: ts('completed_at'),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.questSlug] })],
 );
 
 export type UserRow = typeof users.$inferSelect;

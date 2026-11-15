@@ -11,6 +11,8 @@ const res = computed(() => lesson.result);
 const fixPos = computed(() => new Set(res.value?.fix.map((f) => f.pos) ?? []));
 const mine = computed(() => [...lesson.lastInput]);
 const answer = computed(() => [...(res.value?.answer ?? '')]);
+/** ответ выбран карточкой: буквы не сравниваем */
+const choice = computed(() => !!lesson.card?.options?.length);
 
 /** Что будет, если не нажать «Вспомнил». */
 const againText = computed(() =>
@@ -54,15 +56,15 @@ const SUBTITLES = { correct: 'Верно, так держать', almost: 'По�
 
       <section v-if="res.verdict !== 'correct'" class="grid gap-2.5 rounded-card bg-surface px-4 py-3" aria-label="Сравнение ответа">
         <div class="flex items-center gap-3">
-          <span class="w-[5.5rem] shrink-0 text-footnote text-label-3">Ты написал</span>
+          <span class="w-[5.5rem] shrink-0 text-footnote text-label-3">{{ choice ? 'Ты выбрал' : 'Ты написал' }}</span>
           <span class="flex text-title2 font-semibold">
-            <span v-for="(ch, i) in mine" :key="i" :class="fixPos.has(i) && 'text-danger line-through decoration-2'">{{ ch }}</span>
+            <span v-for="(ch, i) in mine" :key="i" :class="(choice || fixPos.has(i)) && 'text-danger line-through decoration-2'">{{ ch }}</span>
           </span>
         </div>
         <div class="flex items-center gap-3">
           <span class="w-[5.5rem] shrink-0 text-footnote text-label-3">Верно</span>
           <span class="flex text-title2 font-semibold">
-            <span v-for="(ch, i) in answer" :key="i" :class="fixPos.has(i) && 'rounded bg-altyn px-0.5 text-on-altyn'">{{ ch }}</span>
+            <span v-for="(ch, i) in answer" :key="i" :class="!choice && fixPos.has(i) && 'rounded bg-altyn px-0.5 text-on-altyn'">{{ ch }}</span>
           </span>
         </div>
       </section>

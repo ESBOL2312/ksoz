@@ -16,6 +16,8 @@ export function invalidateAfterLesson(qc: QueryClient): void {
   void qc.invalidateQueries({ queryKey: qk.baige() });
   void qc.invalidateQueries({ queryKey: ['words'] });
   void qc.invalidateQueries({ queryKey: qk.myWords });
+  // лимит новых слов общий: после урока шаг квеста может стать доступен или закрыться до завтра
+  void qc.invalidateQueries({ queryKey: qk.quests });
 }
 
 export function usePatchMe() {

@@ -5,10 +5,13 @@ import Art from '@/shared/art/Art.vue';
 import { plural, STEP_LABELS } from '@/shared/format';
 import { haptics } from '@/telegram';
 import { useLessonStore } from '@/stores/lesson';
+import ChoiceCards from '@/features/quest/ChoiceCards.vue';
 import KazakhKeys from './KazakhKeys.vue';
 import WordPic from './WordPic.vue';
 
 const props = defineProps<{ card: LessonCard }>();
+/** Слова квестов повторяются выбором карточки, без печати. */
+const choice = computed(() => !!props.card.options?.length);
 const lesson = useLessonStore();
 const field = ref<HTMLInputElement | null>(null);
 const shake = ref(false);
@@ -76,14 +79,28 @@ function submit() {
     <article class="flex items-stretch overflow-hidden rounded-card bg-surface">
       <WordPic :image-url="card.image_url" :ru="card.ru" compact />
       <div class="grid content-center gap-0.5 p-4">
-        <span class="text-footnote text-label-2">Напиши по-казахски</span>
+        <span class="text-footnote text-label-2">{{ choice ? 'Выбери по-казахски' : 'Напиши по-казахски' }}</span>
         <b class="text-title2">{{ card.ru }}</b>
-        <span class="text-footnote tracking-[0.3em] text-label-2" :aria-label="`${card.length} ${plural(card.length, ['буква', 'буквы', 'букв'])}`">{{
+        <span
+          v-if="!choice"
+          class="text-footnote tracking-[0.3em] text-label-2" :aria-label="`${card.length} ${plural(card.length, ['буква', 'буквы', 'букв'])}`">{{
           '_'.repeat(Math.min(card.length, 14))
         }}</span>
       </div>
     </article>
 
+    <template v-if="choice">
+      <ChoiceCards
+        :options="card.options ?? []"
+        :picked="lesson.busy ? lesson.input : null"
+        :correct="null"
+        :disabled="lesson.busy"
+        @pick="lesson.choose"
+      />
+      <p class="min-h-[18px] text-center text-footnote text-danger" aria-live="polite">{{ errorText }}</p>
+    </template>
+
+    <template v-else>
     <div class="grid gap-1.5">
       <label for="quiz-answer" class="text-footnote text-label-2">Ответ</label>
       <div
@@ -120,5 +137,6 @@ function submit() {
       </button>
       <button type="button" class="btn btn-primary" :disabled="!canCheck" @pointerdown.prevent @click="submit">Тексеру</button>
     </div>
+    </template>
   </div>
 </template>

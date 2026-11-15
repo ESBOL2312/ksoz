@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { api, ApiError, usePatchMe } from '@/api';
+import { useQueryClient } from '@tanstack/vue-query';
+import { api, ApiError, qk, usePatchMe } from '@/api';
 import type { ImportLocalBody } from '@/api';
 import type { Level } from '@ksoz/shared';
 import Art from '@/shared/art/Art.vue';
@@ -14,6 +15,7 @@ const router = useRouter();
 const session = useSessionStore();
 const toast = useToast();
 const patch = usePatchMe();
+const qc = useQueryClient();
 
 type Step = 'hello' | 'level' | 'import';
 const step = ref<Step>('hello');
@@ -78,10 +80,19 @@ async function doImport() {
   await finish();
 }
 
+/** После знакомства — сразу в первый шаг первого квеста; аул остаётся главной («назад» ведёт туда). */
 async function finish() {
   busy.value = true;
   await session.markOnboarded();
+  let slug = 'tanysu';
+  try {
+    const res = await qc.fetchQuery({ queryKey: qk.quests, queryFn: api.quests });
+    slug = res.quests[0]?.slug ?? slug;
+  } catch {
+    /* квесты не загрузились — откроем шаг по умолчанию, он сам покажет ошибку */
+  }
   await router.replace('/');
+  await router.push(`/quest/${encodeURIComponent(slug)}/1`);
 }
 </script>
 
