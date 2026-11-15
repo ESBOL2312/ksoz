@@ -7,7 +7,7 @@ vi.mock('@/api/endpoints', () => ({ api: { review: (b: unknown) => review(b) } }
 
 const { useOutboxStore } = await import('./outbox');
 
-const body = (id: string) => ({ client_id: id, word_id: 1, input: 'ит', hints: 0, ms: 1000 });
+const body = (id: string) => ({ client_id: id, word_id: 1, input: 'ит', hints: 0, ms: 1000, mode: 'type' as const });
 const ok = { verdict: 'correct' } as never;
 
 describe('outbox', () => {

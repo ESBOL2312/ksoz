@@ -12,4 +12,5 @@ export const qk = {
   topics: ['topics'] as const,
   cities: ['cities'] as const,
   invite: ['invite'] as const,
+  quests: ['quests'] as const,
 };

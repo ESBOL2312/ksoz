@@ -4,6 +4,7 @@ import { economyRoutes } from './economy.js';
 import { learningRoutes } from './learning.js';
 import { meRoutes } from './me.js';
 import { profileRoutes } from './profile.js';
+import { questRoutes } from './quests.js';
 
 /**
  * Все модули здесь регистрируются внутри аутентифицированной области
@@ -15,5 +16,6 @@ export const routes: FastifyPluginAsyncZod[] = [
   profileRoutes,
   learningRoutes,
   economyRoutes,
+  questRoutes,
   adminRoutes,
 ];

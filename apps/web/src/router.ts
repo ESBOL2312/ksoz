@@ -10,6 +10,10 @@ export const router = createRouter({
     { path: '/bazaar', name: 'bazaar', component: () => import('@/features/bazaar/BazaarView.vue'), meta: { tabs: true } },
     { path: '/baige', name: 'baige', component: () => import('@/features/baige/BaigeView.vue'), meta: { tabs: true } },
     { path: '/profile', name: 'profile', component: () => import('@/features/profile/ProfileView.vue') },
+    // квест: карта (первый непройденный или по slug) и шаг
+    { path: '/quest', name: 'quest', component: () => import('@/features/quest/QuestMapView.vue') },
+    { path: '/quest/:slug', name: 'quest-map', component: () => import('@/features/quest/QuestMapView.vue') },
+    { path: '/quest/:slug/:n(\\d+)', name: 'quest-step', component: () => import('@/features/quest/QuestStepView.vue') },
     { path: '/welcome', name: 'welcome', component: () => import('@/features/onboarding/WelcomeView.vue') },
     // Telegram кладёт в hash свои параметры (#tgWebAppData=…) — всё неизвестное ведёт на главную
     { path: '/:rest(.*)*', redirect: '/' },

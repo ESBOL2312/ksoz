@@ -33,7 +33,7 @@
 Ключ пользователя — Telegram id (bigint).
 
 Словарь:
-- `words`: id, kk, kk_latn, ru, en, level (A1–B2), image_url, audio_url, status (draft / reviewed / published).
+- `words`: id, kk, kk_latn, ru, en, level (A1–B2), image_url, audio_url, status (draft / reviewed / published), kind (word / phrase; phrase — готовая фраза квеста, в обычном уроке как новое слово не показывается).
 - `word_examples`: id, word_id, kk, ru, position.
 - `topics` (slug, name_kk, name_ru), `word_topics` (word_id, topic_id).
 - `items`: id, word_id, category (kiim / uy / mal / aspap), price, min_level, slot. Товар базара всегда привязан к слову.
@@ -41,12 +41,13 @@
 
 Пользователь и прогресс:
 - `users`: id (= Telegram id), first_name, username, language_code, level, city_id, timezone, altyn, combo, streak_current, streak_best, last_active_day, aul_stage, notify (jsonb), referrer_id, bot_blocked, created_at. altyn — кеш баланса, меняется только вместе с записью в журнале.
-- `user_words`: PK (user_id, word_id), phase (learning / review), step (0–3), ease, interval_days, due_at, reps, lapses, source (lesson / bazaar), introduced_at, last_reviewed_at. Индекс (user_id, due_at).
+- `user_words`: PK (user_id, word_id), phase (learning / review), step (0–3), ease, interval_days, due_at, reps, lapses, source (lesson / bazaar / known / quest), introduced_at, last_reviewed_at. Индекс (user_id, due_at).
 - `reviews`: id, client_id (uuid, unique), user_id, word_id, input, verdict (correct / almost / wrong), hints, ms, step_before, due_before, due_after, altyn, created_at.
 - `friendships`: user_id, friend_id, created_at (две строки на пару).
+- `user_quests`: PK (user_id, quest_slug), steps_done, started_at, completed_at. Контент квестов (шаги, слова, «В жизни», диалог) — в коде `apps/api/src/quests/content.ts`, слова сидятся в `words` по kk.
 
 Экономика:
-- `altyn_ledger`: id, user_id, delta, reason (review / task / purchase / prize), ref_id, created_at. Сумма = users.altyn.
+- `altyn_ledger`: id, user_id, delta, reason (review / task / purchase / prize / quest), ref_id, created_at. Сумма = users.altyn.
 - `user_items`: user_id, item_id, equipped, acquired_at.
 - `daily_tasks`: user_id, day, code, progress, target, reward, claimed_at. Три задания создаются при первом входе за день.
 - `weekly_scores`: PK (week, user_id), city_id, score. Индексы (week, score), (week, city_id, score).
@@ -70,10 +71,13 @@
 | GET /v1/me | создаёт пользователя при первом заходе, отдаёт профиль | 1 |
 | PATCH /v1/me | уровень, город, часовой пояс, напоминания | 1 |
 | GET /v1/home | алтын, серия, ступень аула, надетые вещи, сколько слов к повтору, задания дня | 1 |
-| GET /v1/lesson?limit=12 | очередь: сначала due_at ≤ now, потом новые в пределах дневного лимита. Для повтора — картинка и перевод без казахского слова | 1 |
-| POST /v1/lesson/introduce | новое слово показано целиком, первый повтор через 20 мин | 1 |
+| GET /v1/lesson?limit=12 | очередь: сначала due_at ≤ now, потом новые в пределах дневного лимита (без фраз квестов). Для повтора — картинка и перевод без казахского слова; у слов из квестов `options` — 4 варианта карточками | 1 |
+| POST /v1/lesson/introduce | новое слово показано целиком, первый повтор через 20 мин; `source` lesson / quest — дневной лимит новых слов общий | 1 |
 | POST /v1/lesson/hint | следующая буква, считает подсказки | 1 |
-| POST /v1/reviews | проверяет ответ, сдвигает SRS, начисляет алтын и комбо; за ошибку снимает 5 алтын, но не ниже 0 | 1 |
+| POST /v1/reviews | проверяет ответ, сдвигает SRS, начисляет алтын и комбо; за ошибку снимает 5 алтын, но не ниже 0. `mode=choice` (ответ карточкой): SRS так же, алтын — половина, без штрафа | 1 |
+| GET /v1/quests | квесты: шаги (done / current / locked), сколько новых слов в шаге, `current_blocked=daily_limit`, остаток лимита | 1 |
+| GET /v1/quests/{slug}/steps/{n} | шаг: повтор слов прошлых шагов (карточки), слова шага, «В жизни» с вариантами, диалог последнего шага; 409 step_locked для закрытых | 1 |
+| POST /v1/quests/{slug}/steps/{n}/complete | только текущий шаг, все его слова в изучении (иначе 409 step_words_missing): +20 алтын, за последний ещё +100, серия; повтор пройденного — 0 | 1 |
 | GET /v1/words?level=&topic= | словарь с состоянием каждого слова у пользователя | 1 |
 | GET /v1/topics | темы и уровни | 1 |
 | GET /v1/bazaar | товары: куплено, доступно, закрыто по уровню | 1 |

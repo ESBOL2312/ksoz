@@ -114,12 +114,21 @@ export const LessonCardSchema = z.object({
   phase: PhaseSchema,
   step: z.number().int(),
   length: z.number().int(),
+  /**
+   * Варианты ответа карточками (казахские слова, один верный) — для слов из квестов:
+   * их повторяют выбором, без печати. null — ответ печатается.
+   */
+  options: z.array(z.string()).nullable().default(null),
 });
 export const LessonSchema = z.object({ cards: z.array(LessonCardSchema) });
 export type LessonCard = z.infer<typeof LessonCardSchema>;
 export type Lesson = z.infer<typeof LessonSchema>;
 
-export const IntroduceBodySchema = z.object({ word_id: Id });
+export const IntroduceBodySchema = z.object({
+  word_id: Id,
+  /** откуда слово взято в изучение; лимит новых слов в день общий */
+  source: z.enum(['lesson', 'quest']).default('lesson'),
+});
 export const IntroduceResponseSchema = z.object({ next: NextStateSchema });
 /** «Уже знаю»: тело и ответ как у introduce. */
 export const KnownBodySchema = IntroduceBodySchema;
@@ -139,6 +148,8 @@ export const ReviewBodySchema = z.object({
   input: z.string().max(200),
   hints: z.number().int().min(0).max(50).default(0),
   ms: z.number().int().min(0).max(3_600_000).default(0),
+  /** choice — ответ выбран карточкой (квесты): половина награды, за ошибку алтын не снимается */
+  mode: z.enum(['type', 'choice']).default('type'),
 });
 export type ReviewBody = z.infer<typeof ReviewBodySchema>;
 

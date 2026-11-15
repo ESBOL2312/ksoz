@@ -8,15 +8,16 @@ import {
   type LessonCard,
   type Phase,
 } from '@ksoz/shared';
-import { and, asc, eq, inArray, lte, notExists, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, lte, ne, notExists, sql } from 'drizzle-orm';
 import type { Db, Tx } from '../db/client.js';
 import { userWords, users, wordExamples, words, type UserRow } from '../db/schema.js';
 import { conflict, notFound } from '../errors.js';
+import { lessonOptions } from '../quests/options.js';
 import { ensureDailyTasks, progressTask } from './tasks.js';
 
 type Q = Db | Tx;
 
-/** Сколько новых слов (source=lesson) показано в локальный день пользователя. */
+/** Сколько новых слов (source=lesson или quest — лимит общий) показано в локальный день пользователя. */
 export async function countIntroducedToday(q: Q, user: { id: number; timezone: string }, now: Date) {
   const day = localDay(now, user.timezone);
   const [row] = await q
@@ -25,7 +26,7 @@ export async function countIntroducedToday(q: Q, user: { id: number; timezone: s
     .where(
       and(
         eq(userWords.userId, user.id),
-        eq(userWords.source, 'lesson'),
+        inArray(userWords.source, ['lesson', 'quest']),
         sql`(${userWords.introducedAt} AT TIME ZONE ${user.timezone})::date = ${day}::date`,
       ),
     );
@@ -68,6 +69,8 @@ export async function getLesson(
       audioUrl: words.audioUrl,
       phase: userWords.phase,
       step: userWords.step,
+      source: userWords.source,
+      kind: words.kind,
     })
     .from(userWords)
     .innerJoin(words, eq(words.id, userWords.wordId))
@@ -91,6 +94,8 @@ export async function getLesson(
             and(
               eq(words.status, 'published'),
               lte(words.level, user.level),
+              // готовые фразы квестов изучаются только в квесте
+              ne(words.kind, 'phrase'),
               notExists(
                 db
                   .select({ one: sql`1` })
@@ -104,6 +109,7 @@ export async function getLesson(
       : [];
 
   const examples = await examplesFor(db, [...due.map((d) => d.wordId), ...fresh.map((f) => f.wordId)]);
+  const dueKks = due.map((d) => d.kk);
   const cards: LessonCard[] = [
     ...due.map((d) => ({
       kind: 'review' as const,
@@ -116,6 +122,8 @@ export async function getLesson(
       phase: d.phase as Phase,
       step: d.step,
       length: [...d.kk].length,
+      // слова из квестов повторяются выбором карточки
+      options: d.source === 'quest' || d.kind === 'phrase' ? lessonOptions(d.kk, dueKks) : null,
     })),
     ...fresh.map((f) => ({
       kind: 'new' as const,
@@ -128,12 +136,19 @@ export async function getLesson(
       phase: 'learning' as const,
       step: 0,
       length: [...f.kk].length,
+      options: null,
     })),
   ];
   return { cards };
 }
 
-export async function introduceWord(db: Db, user: UserRow, wordId: number, now = new Date()) {
+export async function introduceWord(
+  db: Db,
+  user: UserRow,
+  wordId: number,
+  source: 'lesson' | 'quest' = 'lesson',
+  now = new Date(),
+) {
   return db.transaction(async (tx) => {
     // блокировка пользователя сериализует проверку дневного лимита
     await tx.select({ id: users.id }).from(users).where(eq(users.id, user.id)).for('update');
@@ -164,7 +179,7 @@ export async function introduceWord(db: Db, user: UserRow, wordId: number, now =
       dueAt: s.dueAt,
       reps: s.reps,
       lapses: s.lapses,
-      source: 'lesson',
+      source,
       introducedAt: now,
     });
     const day = localDay(now, user.timezone);

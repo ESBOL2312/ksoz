@@ -350,6 +350,17 @@ body {
   }
 }
 
+/* появление карточки снизу (квест) */
+@keyframes enter-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.enter-up {
+  animation: enter-up 0.28s ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

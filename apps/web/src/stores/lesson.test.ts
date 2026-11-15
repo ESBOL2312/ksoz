@@ -203,3 +203,32 @@ describe('«Вспомнил» after a review', () => {
     expect(l.stage).toBe('done');
   });
 });
+
+describe('choice cards (quest words in the general lesson)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    setActivePinia(createPinia());
+  });
+
+  it('submits the chosen card with mode=choice; typed cards keep mode=type', async () => {
+    lessonApi.mockResolvedValue({
+      cards: [{ ...reviewCard(1, 'сәлем', 'привет'), options: ['рақмет', 'сәлем', 'жақсы'] }, reviewCard(2, 'үй', 'дом')],
+    });
+    const l = useLessonStore();
+    await l.start();
+    review.mockResolvedValueOnce(reviewRes('correct', 'сәлем'));
+    await l.choose('сәлем');
+    expect(review).toHaveBeenLastCalledWith(expect.objectContaining({ word_id: 1, input: 'сәлем', mode: 'choice', hints: 0 }));
+    expect(l.stage).toBe('result');
+    l.next(true);
+
+    // у обычной карточки нет вариантов: выбор игнорируется, ответ печатается
+    await l.choose('үй');
+    expect(review).toHaveBeenCalledTimes(1);
+    review.mockResolvedValueOnce(reviewRes('correct', 'үй'));
+    l.input = 'үй';
+    await l.check();
+    expect(review).toHaveBeenLastCalledWith(expect.objectContaining({ word_id: 2, mode: 'type' }));
+  });
+});
