@@ -2,7 +2,8 @@ import { eq } from 'drizzle-orm';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { registerBot, setWebhook } from '../src/bot/index.js';
-import { users } from '../src/db/schema.js';
+import { randomUUID } from 'node:crypto';
+import { reviews, users, words } from '../src/db/schema.js';
 import { hasTestDb, makeTestApp, resetDb, testConfig } from './helpers/app.js';
 
 const secret = { 'x-telegram-bot-api-secret-token': 'dev-webhook-secret' };
@@ -111,19 +112,37 @@ describe.skipIf(!hasTestDb)('bot handlers with a fake Bot API', () => {
     expect(JSON.stringify(c.payload.reply_markup)).toContain('https://t.me/ksoz_bot/app?startapp=ref_42');
   });
 
-  it('/stats shows user counts to an admin only', async () => {
+  it('/stats shows user counts and activity to an admin only', async () => {
     await resetDb(app);
+    const day = 86_400_000;
+    const now = Date.now();
     await app.db.insert(users).values([
-      { id: 1, firstName: 'A' },
+      { id: 1, firstName: 'A', streakCurrent: 4, lastActiveDay: new Date(now + 5 * 3_600_000).toISOString().slice(0, 10) },
       { id: 2, firstName: 'B', botBlocked: true },
-      { id: 3, firstName: 'C', createdAt: new Date(Date.now() - 30 * 86_400_000) },
+      { id: 3, firstName: 'C', createdAt: new Date(now - 20 * day) },
     ]);
+    await app.db.insert(words).values({ kk: 'stat-test', ru: 'тест', level: 'A1' }).onConflictDoNothing();
+    const [w] = await app.db.select({ id: words.id }).from(words).where(eq(words.kk, 'stat-test'));
+    const review = (userId: number, at: Date) => ({
+      clientId: randomUUID(), userId, wordId: w!.id, input: 'x', verdict: 'correct' as const, dueAfter: at, createdAt: at,
+    });
+    await app.db.insert(reviews).values([
+      review(1, new Date(now - 60_000)),
+      review(1, new Date(now - 120_000)),
+      review(3, new Date(now - 19 * day)), // на следующий день после прихода
+    ]);
+
     await send('/stats', 9001);
     const text: string = calls.find((x) => x.method === 'sendMessage')!.payload.text;
     expect(text).toContain('Всего: 3');
     expect(text).toContain('Новых за сутки: 2, за неделю: 2');
-    expect(text).toContain('Активных за сутки: 0, за неделю: 0');
+    expect(text).toContain('Активных за сутки: 1, за неделю: 1');
     expect(text).toContain('Заблокировали бота: 1');
+    expect(text).toContain('Ответов за сутки: 2, за неделю: 2');
+    expect(text).toContain('На активного за неделю: 2 ответов, 1 дн. из 7');
+    expect(text).toContain('Серия 3+ дня: 1, 7+ дней: 0');
+    expect(text).toContain('На следующий день: 1 из 1 (100%)');
+    expect(text).toContain('Через неделю: 0 из 1 (0%)');
 
     calls.length = 0;
     await send('/stats', 5);
