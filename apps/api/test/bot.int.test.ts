@@ -147,6 +147,10 @@ describe.skipIf(!hasTestDb)('bot handlers with a fake Bot API', () => {
     calls.length = 0;
     await send('/stats', 5);
     expect(calls.find((x) => x.method === 'sendMessage')!.payload.text).not.toContain('Всего');
+
+    // словарь resetDb не чистит, а другие тесты считают слова
+    await resetDb(app);
+    await app.db.delete(words).where(eq(words.kk, 'stat-test'));
   });
 
   it('/help answers', async () => {
