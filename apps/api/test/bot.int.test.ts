@@ -62,10 +62,11 @@ describe.skipIf(!hasTestDb)('bot webhook', () => {
 
 describe.skipIf(!hasTestDb)('bot handlers with a fake Bot API', () => {
   let app: FastifyInstance;
+  let base: FastifyInstance;
   const calls: { method: string; payload: Record<string, any> }[] = [];
 
   beforeAll(async () => {
-    const base = await makeTestApp();
+    base = await makeTestApp();
     app = Fastify();
     app.decorate('config', testConfig({ BOT_USERNAME: 'ksoz_bot', WEBAPP_SHORT_NAME: 'app', MINIAPP_URL: 'https://app.example' }));
     app.decorate('db', base.db);
@@ -76,26 +77,26 @@ describe.skipIf(!hasTestDb)('bot handlers with a fake Bot API', () => {
       },
     });
     await app.ready();
-    await base.close().catch(() => {});
   });
   afterAll(async () => {
     await app.close().catch(() => {});
+    await base.close().catch(() => {});
   });
   beforeEach(() => void (calls.length = 0));
 
-  const message = (text: string) => ({
+  const message = (text: string, from = 5) => ({
     update_id: 2,
     message: {
       message_id: 1,
       date: 1_700_000_000,
-      chat: { id: 5, type: 'private', first_name: 'U' },
-      from: { id: 5, is_bot: false, first_name: 'U' },
+      chat: { id: from, type: 'private', first_name: 'U' },
+      from: { id: from, is_bot: false, first_name: 'U' },
       text,
       entities: [{ type: 'bot_command', offset: 0, length: text.split(' ')[0]!.length }],
     },
   });
-  const send = (text: string) =>
-    app.inject({ method: 'POST', url: '/bot/webhook', headers: secret, payload: message(text) });
+  const send = (text: string, from?: number) =>
+    app.inject({ method: 'POST', url: '/bot/webhook', headers: secret, payload: message(text, from) });
 
   it('/start replies with a web_app button', async () => {
     expect((await send('/start')).statusCode).toBe(200);
@@ -108,6 +109,25 @@ describe.skipIf(!hasTestDb)('bot handlers with a fake Bot API', () => {
     await send('/start ref_42');
     const c = calls.find((x) => x.method === 'sendMessage')!;
     expect(JSON.stringify(c.payload.reply_markup)).toContain('https://t.me/ksoz_bot/app?startapp=ref_42');
+  });
+
+  it('/stats shows user counts to an admin only', async () => {
+    await resetDb(app);
+    await app.db.insert(users).values([
+      { id: 1, firstName: 'A' },
+      { id: 2, firstName: 'B', botBlocked: true },
+      { id: 3, firstName: 'C', createdAt: new Date(Date.now() - 30 * 86_400_000) },
+    ]);
+    await send('/stats', 9001);
+    const text: string = calls.find((x) => x.method === 'sendMessage')!.payload.text;
+    expect(text).toContain('Всего: 3');
+    expect(text).toContain('Новых за сутки: 2, за неделю: 2');
+    expect(text).toContain('Активных за сутки: 0, за неделю: 0');
+    expect(text).toContain('Заблокировали бота: 1');
+
+    calls.length = 0;
+    await send('/stats', 5);
+    expect(calls.find((x) => x.method === 'sendMessage')!.payload.text).not.toContain('Всего');
   });
 
   it('/help answers', async () => {

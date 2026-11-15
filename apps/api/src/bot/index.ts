@@ -6,6 +6,7 @@ import type { FastifyInstance } from 'fastify';
 import type { Config } from '../config.js';
 import type { Db } from '../db/client.js';
 import { users } from '../db/schema.js';
+import { formatStats, userStats } from '../services/stats.js';
 
 export const WEBHOOK_PATH = '/bot/webhook';
 export const ALLOWED_UPDATES = ['message', 'my_chat_member'] as const;
@@ -66,6 +67,12 @@ export function createBot(config: Config, db: Db, opts: BotOptions = {}): Bot {
   };
   bot.command('help', hint);
   bot.command('settings', hint);
+
+  // только для ADMIN_IDS; остальным — обычная подсказка, чтобы команда не светилась
+  bot.command('stats', async (ctx) => {
+    if (!ctx.from || !config.ADMIN_IDS.includes(ctx.from.id)) return hint(ctx);
+    await ctx.reply(formatStats(await userStats(db)));
+  });
 
   bot.on('my_chat_member', async (ctx) => {
     const u = ctx.myChatMember;
