@@ -28,6 +28,16 @@ const EnvSchema = z
       .regex(/^[A-Za-z0-9_-]{1,256}$/, 'WEBHOOK_SECRET: only A-Z, a-z, 0-9, _ and - (Telegram secret_token)')
       .default(DEV_WEBHOOK_SECRET),
     WEB_ORIGIN: z.string().default('http://localhost:5173'),
+    /** origin веб-сборки игры для /v1/game/* через запятую; `*` — одна метка домена (превью Vercel) */
+    GAME_ORIGINS: z
+      .string()
+      .default('')
+      .transform((s) =>
+        s
+          .split(',')
+          .map((x) => x.trim().replace(/\/$/, ''))
+          .filter(Boolean),
+      ),
     PUBLIC_URL: z.string().default('http://localhost:3000'),
     MINIAPP_URL: z.string().default('http://localhost:5173'),
     ADMIN_IDS: csvNumbers,
@@ -50,6 +60,18 @@ const EnvSchema = z
   });
 
 export type Config = z.infer<typeof EnvSchema>;
+
+/** `https://yer-tostik-*.vercel.app` → RegExp, где `*` — непустая метка без точек; без `*` — строка. */
+export function originMatchers(origins: string[]): (string | RegExp)[] {
+  return origins.map((o) => {
+    if (!o.includes('*')) return o;
+    const re = o
+      .split('*')
+      .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('[A-Za-z0-9-]+');
+    return new RegExp(`^${re}$`);
+  });
+}
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   // На Render адрес сервиса приходит в RENDER_EXTERNAL_URL — используем его как дефолт.

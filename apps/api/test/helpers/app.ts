@@ -28,7 +28,7 @@ export async function makeTestApp(overrides: Partial<NodeJS.ProcessEnv> = {}): P
 }
 
 const TABLES = [
-  'notification_log', 'weekly_scores', 'daily_tasks', 'user_items', 'altyn_ledger',
+  'game_links', 'game_link_codes', 'notification_log', 'weekly_scores', 'daily_tasks', 'user_items', 'altyn_ledger',
   'reviews', 'user_words', 'user_quests', 'friendships', 'users',
 ];
 

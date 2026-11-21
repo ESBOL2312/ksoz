@@ -1,4 +1,4 @@
-import type { Category } from '@ksoz/shared';
+import { itemArtKey, type Category } from '@ksoz/shared';
 
 /** Символы спрайта и их viewBox. */
 export const ART = {
@@ -24,26 +24,7 @@ export const ART = {
 
 export type ArtName = keyof typeof ART;
 
-/** Рисунок для товара без image_url: по слову, иначе по категории. */
+/** Рисунок для товара без image_url: по слову, иначе по категории (тот же ключ получает игра). */
 export function artForItem(kk: string, category: Category): ArtName {
-  const byWord: Record<string, ArtName> = {
-    'киіз үй': 'yurt',
-    үй: 'yurt',
-    домбыра: 'dombra',
-    шапан: 'chapan',
-    'көк шапан': 'chapan',
-    сырмақ: 'syrmak',
-    бүркіт: 'eagle',
-    ат: 'horse',
-    жылқы: 'horse',
-    тұлпар: 'horse',
-    тақия: 'takiya',
-    етік: 'etik',
-    мысық: 'cat',
-    қой: 'sheep',
-    шай: 'tea',
-  };
-  const hit = byWord[kk.trim().toLowerCase()];
-  if (hit) return hit;
-  return ({ kiim: 'chapan', uy: 'yurt', mal: 'horse', aspap: 'dombra' } as const)[category];
+  return itemArtKey(kk, category);
 }

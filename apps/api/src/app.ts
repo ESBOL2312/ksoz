@@ -9,10 +9,11 @@ import {
 } from 'fastify-type-provider-zod';
 import { sql } from 'drizzle-orm';
 import { registerBot } from './bot/index.js';
-import type { Config } from './config.js';
+import { originMatchers, type Config } from './config.js';
 import { createDb, type Db } from './db/client.js';
 import { AppError } from './errors.js';
 import authPlugin from './plugins/auth.js';
+import { gameRoutes } from './routes/game.js';
 import { routes } from './routes/index.js';
 
 declare module 'fastify' {
@@ -56,10 +57,17 @@ export async function buildApp(config: Config, deps: { db?: Db } = {}): Promise<
     return reply.status(500).send({ error: 'internal_error' });
   });
 
-  await app.register(cors, {
-    origin: config.NODE_ENV === 'production' ? config.WEB_ORIGIN : true,
+  // Миниапп — только WEB_ORIGIN. /v1/game/* дополнительно открыт веб-сборке игры (GAME_ORIGINS).
+  const prod = config.NODE_ENV === 'production';
+  const corsBase = {
     allowedHeaders: ['authorization', 'content-type', 'x-dev-user', 'x-dev-start-param'],
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  };
+  const miniappOrigin = prod ? config.WEB_ORIGIN : true;
+  const gameOrigin = prod ? [config.WEB_ORIGIN, ...originMatchers(config.GAME_ORIGINS)] : true;
+  await app.register(cors, {
+    delegator: (req, cb) =>
+      cb(null, { ...corsBase, origin: req.url?.startsWith('/v1/game/') ? gameOrigin : miniappOrigin }),
   });
 
   // Лимит на пользователя (после authenticate) или на IP. Для отдельных роутов:
@@ -70,7 +78,7 @@ export async function buildApp(config: Config, deps: { db?: Db } = {}): Promise<
     timeWindow: '1 minute',
     hook: 'preHandler',
     allowList: (req) => req.url === '/health',
-    keyGenerator: (req) => (req.user ? `u:${req.user.id}` : req.ip),
+    keyGenerator: (req) => (req.user ? `u:${req.user.id}` : req.gameLink ? `g:${req.gameLink.linkId}` : req.ip),
   });
 
   await app.register(authPlugin);
@@ -89,6 +97,9 @@ export async function buildApp(config: Config, deps: { db?: Db } = {}): Promise<
     scope.addHook('onRequest', scope.authenticate);
     for (const route of routes) await scope.register(route);
   });
+
+  // игра «Ер Төстік»: без initData, своя авторизация Authorization: Game <токен>
+  await app.register(gameRoutes);
 
   registerBot(app);
   return app;

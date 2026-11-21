@@ -73,6 +73,10 @@ node apps/api/dist/main.js migrate && node apps/api/dist/main.js seed
 
 `/admin/*` доступен пользователям из `ADMIN_IDS`. `POST /admin/words/:id/image` принимает `{ "image_url": "https://..." }` — файл в S3 админка/CDN загружает отдельно, бэкенд хранит только URL. `POST /admin/words/import` принимает CSV (`Content-Type: text/csv`, колонки `kk,ru,level,topic,example_kk,example_ru`; `topic` — slug, несколько через `|`) и ставит словам статус `draft`.
 
+## Игра «Ер Төстік»
+
+Игра связывается с аккаунтом по коду из 6 цифр и читает купленные вещи токеном `Authorization: Game <токен>`. Методы и порядок вызовов: [docs/game-link.md](docs/game-link.md).
+
 ## Тесты
 
 Юнит-тесты (`@ksoz/shared`, проверка initData) не требуют БД. Интеграционным нужен Postgres в `DATABASE_URL_TEST`; без него они пропускаются.
@@ -99,6 +103,7 @@ docker compose -f docker-compose.test.yml up --build --abort-on-container-exit -
 | `WEBAPP_SHORT_NAME` | `app` | короткое имя миниаппа в BotFather |
 | `WEBHOOK_SECRET` | `dev-webhook-secret` | `X-Telegram-Bot-Api-Secret-Token`; в production обязателен свой |
 | `WEB_ORIGIN` | `http://localhost:5173` | CORS (в development разрешён любой origin) |
+| `GAME_ORIGINS` | пусто | CORS веб-сборки игры, только для `/v1/game/*`; через запятую, `*` — одна метка домена |
 | `PUBLIC_URL` | `http://localhost:3000` | публичный URL API (для webhook) |
 | `MINIAPP_URL` | `http://localhost:5173` | URL миниаппа для кнопок бота |
 | `ADMIN_IDS` | пусто | Telegram id админов через запятую |

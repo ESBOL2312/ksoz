@@ -26,6 +26,9 @@ services:
         sync: false
       - key: MINIAPP_URL # полный адрес миниаппа на GitHub Pages
         sync: false
+      # веб-сборка игры «Ер Төстік» (CORS только для /v1/game/*); `*` — превью Vercel
+      - key: GAME_ORIGINS
+        value: https://yer-tostik.vercel.app,https://yer-tostik-*.vercel.app
       - key: ADMIN_IDS
         sync: false
       # PUBLIC_URL и KEEPALIVE_URL берутся из RENDER_EXTERNAL_URL автоматически
