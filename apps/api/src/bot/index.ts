@@ -6,10 +6,13 @@ import type { FastifyInstance } from 'fastify';
 import type { Config } from '../config.js';
 import type { Db } from '../db/client.js';
 import { users } from '../db/schema.js';
+import { AppError } from '../errors.js';
+import { checkLinkCode, confirmLinkCode } from '../services/game.js';
 import { formatStats, userStats } from '../services/stats.js';
+import { getOrCreateUser } from '../services/users.js';
 
 export const WEBHOOK_PATH = '/bot/webhook';
-export const ALLOWED_UPDATES = ['message', 'my_chat_member'] as const;
+export const ALLOWED_UPDATES = ['message', 'my_chat_member', 'callback_query'] as const;
 
 export interface BotOptions {
   /** подмена вызовов Bot API (тесты) */
@@ -17,6 +20,40 @@ export interface BotOptions {
 }
 
 const START_PAYLOAD_RE = /^[A-Za-z0-9_-]{1,64}$/;
+const START_LINK_RE = /^link_(\S*)$/;
+const LINK_CODE_RE = /^\d{6}$/;
+const LINK_CALLBACK_RE = /^glink:(\d{6})$/;
+
+/** Не больше `max` попыток ввода кода за минуту на одного игрока (в памяти процесса). */
+export class AttemptLimiter {
+  private hits = new Map<number, number[]>();
+  constructor(
+    private readonly max = 5,
+    private readonly windowMs = 60_000,
+  ) {}
+  take(userId: number, now = Date.now()): boolean {
+    const recent = (this.hits.get(userId) ?? []).filter((t) => now - t < this.windowMs);
+    if (recent.length >= this.max) {
+      this.hits.set(userId, recent);
+      return false;
+    }
+    recent.push(now);
+    this.hits.set(userId, recent);
+    if (this.hits.size > 10_000) {
+      for (const [id, ts] of this.hits) if (!ts.some((t) => now - t < this.windowMs)) this.hits.delete(id);
+    }
+    return true;
+  }
+}
+
+const LINK_TEXT = {
+  ask: 'Ер Төстік ойынын қосамыз ба?\nПодключить игру «Ер Төстік»?',
+  usage: 'Ойындағы 6 санды кодты жаз: /link 482913\nНапиши код из игры: /link 482913',
+  notFound: 'Код табылмады. Ойындағы сандарды тексер.\nКод не найден. Проверь цифры в игре.',
+  expired: 'Кодтың уақыты өтті. Ойыннан жаңа код ал.\nКод устарел. Получи новый код в игре.',
+  tooMany: 'Тым көп әрекет. Бір минуттан кейін қайталап көр.\nСлишком много попыток. Попробуй через минуту.',
+  done: 'Дайын! Ойынға орал.\nГотово! Возвращайся в игру.',
+};
 
 function botInfo(config: Config): UserFromGetMe {
   const id = Number(config.BOT_TOKEN.split(':')[0]);
@@ -51,7 +88,52 @@ export function createBot(config: Config, db: Db, opts: BotOptions = {}): Bot {
   const bot = new Bot(config.BOT_TOKEN, { botInfo: botInfo(config) });
   if (opts.transformer) bot.api.config.use(opts.transformer);
 
+  const attempts = new AttemptLimiter();
+  // нажатия «Да» считаем отдельно: callback_data тоже можно подделать
+  const presses = new AttemptLimiter();
+
+  /** /start link_<код> и /link <код>: проверяем код и спрашиваем «Подключить?» с кнопкой «Да». */
+  const askLink = async (ctx: Context, raw: string) => {
+    if (!ctx.from) return;
+    const code = raw.trim();
+    if (!code) return void (await ctx.reply(LINK_TEXT.usage));
+    if (!attempts.take(ctx.from.id)) return void (await ctx.reply(LINK_TEXT.tooMany));
+    if (!LINK_CODE_RE.test(code)) return void (await ctx.reply(LINK_TEXT.notFound));
+    const state = await checkLinkCode(db, code);
+    if (state === 'expired') return void (await ctx.reply(LINK_TEXT.expired));
+    if (state !== 'pending') return void (await ctx.reply(LINK_TEXT.notFound));
+    await ctx.reply(LINK_TEXT.ask, { reply_markup: new InlineKeyboard().text('Иә / Да', `glink:${code}`) });
+  };
+
+  bot.command('link', (ctx) => askLink(ctx, ctx.match));
+
+  bot.callbackQuery(LINK_CALLBACK_RE, async (ctx) => {
+    const code = ctx.match[1]!;
+    const from = ctx.from;
+    if (!presses.take(from.id)) {
+      await ctx.answerCallbackQuery({ text: LINK_TEXT.tooMany });
+      return;
+    }
+    // как первый GET /v1/me: игрок мог ещё ни разу не открывать миниапп
+    await getOrCreateUser(
+      db,
+      { id: from.id, first_name: from.first_name, username: from.username, language_code: from.language_code },
+      null,
+    );
+    let text = LINK_TEXT.done;
+    try {
+      await confirmLinkCode(db, from.id, code);
+    } catch (e) {
+      if (!(e instanceof AppError)) throw e;
+      text = e.code === 'code_expired' ? LINK_TEXT.expired : LINK_TEXT.notFound;
+    }
+    await ctx.answerCallbackQuery();
+    await ctx.editMessageText(text);
+  });
+
   bot.command('start', async (ctx) => {
+    const link = START_LINK_RE.exec(ctx.match.trim());
+    if (link) return askLink(ctx, link[1]!);
     await ctx.reply(
       'Сәлем! Қазақ сөздерін бірге үйренейік.\nПривет! Давай учить казахские слова вместе.',
       { reply_markup: openAppKeyboard(config, ctx.match.trim() || undefined) },

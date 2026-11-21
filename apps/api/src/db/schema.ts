@@ -299,3 +299,36 @@ export const userQuests = pgTable(
 export type UserRow = typeof users.$inferSelect;
 export type WordRow = typeof words.$inferSelect;
 export type UserWordRow = typeof userWords.$inferSelect;
+
+// --- связка с игрой «Ер Төстік» ---
+/** Код из 6 цифр: игра запрашивает его, игрок подтверждает в боте или миниаппе, игра забирает токен. */
+export const gameLinkCodes = pgTable(
+  'game_link_codes',
+  {
+    code: text('code').primaryKey(),
+    deviceId: text('device_id').notNull(),
+    userId: tgId('user_id').references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: ts('created_at').notNull().defaultNow(),
+    expiresAt: ts('expires_at').notNull(),
+    confirmedAt: ts('confirmed_at'),
+    claimedAt: ts('claimed_at'),
+  },
+  (t) => [index('game_link_codes_device_idx').on(t.deviceId), index('game_link_codes_expires_idx').on(t.expiresAt)],
+);
+
+/** Связанное устройство: одно устройство — один аккаунт, в базе только sha256 токена. */
+export const gameLinks = pgTable(
+  'game_links',
+  {
+    id: serial('id').primaryKey(),
+    userId: tgId('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    deviceId: text('device_id').notNull().unique(),
+    tokenHash: text('token_hash').notNull().unique(),
+    createdAt: ts('created_at').notNull().defaultNow(),
+    lastSeenAt: ts('last_seen_at'),
+    revokedAt: ts('revoked_at'),
+  },
+  (t) => [index('game_links_user_idx').on(t.userId)],
+);

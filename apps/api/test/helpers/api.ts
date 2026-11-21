@@ -11,6 +11,7 @@ export function client(app: FastifyInstance, id: number) {
     id,
     get: (url: string) => app.inject({ method: 'GET', url, headers: headers() }),
     post: (url: string, payload?: unknown) => app.inject({ method: 'POST', url, headers: headers(), payload: payload as object }),
+    del: (url: string) => app.inject({ method: 'DELETE', url, headers: headers() }),
     patch: (url: string, payload?: unknown) => app.inject({ method: 'PATCH', url, headers: headers(), payload: payload as object }),
     raw: (method: 'POST', url: string, body: string, contentType: string) =>
       app.inject({ method, url, headers: { ...headers(), 'content-type': contentType }, payload: body }),
